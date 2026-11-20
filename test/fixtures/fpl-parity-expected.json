@@ -1,0 +1,571 @@
+[
+ {
+  "name": "all-time top scorers (stable player key across seasons)",
+  "rows": [
+   {
+    "player__player_name": "Mohamed Salah",
+    "total_points": 2208,
+    "appearances": 315,
+    "points_per_90": 7.581260491377995
+   },
+   {
+    "player__player_name": "Son Heung-min",
+    "total_points": 1660,
+    "appearances": 305,
+    "points_per_90": 6.518324607329843
+   },
+   {
+    "player__player_name": "Harry Kane",
+    "total_points": 1456,
+    "appearances": 234,
+    "points_per_90": 6.446280991735537
+   },
+   {
+    "player__player_name": "Kevin De Bruyne",
+    "total_points": 1450,
+    "appearances": 260,
+    "points_per_90": 6.788036410923277
+   },
+   {
+    "player__player_name": "Raheem Sterling",
+    "total_points": 1383,
+    "appearances": 270,
+    "points_per_90": 6.377517036429779
+   },
+   {
+    "player__player_name": "Jordan Pickford",
+    "total_points": 1351,
+    "appearances": 366,
+    "points_per_90": 3.696643560744254
+   },
+   {
+    "player__player_name": "Virgil van Dijk",
+    "total_points": 1324,
+    "appearances": 311,
+    "points_per_90": 4.3109873014724505
+   },
+   {
+    "player__player_name": "Bruno Borges Fernandes",
+    "total_points": 1295,
+    "appearances": 236,
+    "points_per_90": 5.697873380591543
+   },
+   {
+    "player__player_name": "Andrew Robertson",
+    "total_points": 1285,
+    "appearances": 313,
+    "points_per_90": 4.588921514165542
+   },
+   {
+    "player__player_name": "Trent Alexander-Arnold",
+    "total_points": 1280,
+    "appearances": 259,
+    "points_per_90": 5.567369031509762
+   }
+  ]
+ },
+ {
+  "name": "2024-25 top players, managers excluded",
+  "rows": [
+   {
+    "player__player_name": "Mohamed Salah",
+    "total_points": 344,
+    "goals": 29,
+    "assists": 18
+   },
+   {
+    "player__player_name": "Bryan Mbeumo",
+    "total_points": 236,
+    "goals": 20,
+    "assists": 9
+   },
+   {
+    "player__player_name": "Cole Palmer",
+    "total_points": 214,
+    "goals": 15,
+    "assists": 10
+   },
+   {
+    "player__player_name": "Alexander Isak",
+    "total_points": 211,
+    "goals": 23,
+    "assists": 6
+   },
+   {
+    "player__player_name": "Chris Wood",
+    "total_points": 200,
+    "goals": 20,
+    "assists": 3
+   },
+   {
+    "player__player_name": "Jarrod Bowen",
+    "total_points": 193,
+    "goals": 13,
+    "assists": 11
+   },
+   {
+    "player__player_name": "Ollie Watkins",
+    "total_points": 186,
+    "goals": 16,
+    "assists": 8
+   },
+   {
+    "player__player_name": "Yoane Wissa",
+    "total_points": 185,
+    "goals": 18,
+    "assists": 6
+   },
+   {
+    "player__player_name": "Luis D\u00edaz Marulanda",
+    "total_points": 183,
+    "goals": 13,
+    "assists": 7
+   },
+   {
+    "player__player_name": "Erling Haaland",
+    "total_points": 181,
+    "goals": 22,
+    "assists": 3
+   }
+  ]
+ },
+ {
+  "name": "goals per match by season (fixtures table)",
+  "rows": [
+   {
+    "fixture__match_season": "2016-17",
+    "goals_per_match": 2.8,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2017-18",
+    "goals_per_match": 2.6789473684210527,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2018-19",
+    "goals_per_match": 2.8210526315789473,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2019-20",
+    "goals_per_match": 2.721052631578947,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2020-21",
+    "goals_per_match": 2.694736842105263,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2021-22",
+    "goals_per_match": 2.818421052631579,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2022-23",
+    "goals_per_match": 2.8526315789473684,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2023-24",
+    "goals_per_match": 3.278947368421053,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2024-25",
+    "goals_per_match": 2.9342105263157894,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2025-26",
+    "goals_per_match": 2.75,
+    "matches": 380
+   },
+   {
+    "fixture__match_season": "2026-27",
+    "goals_per_match": 2.95,
+    "matches": 60
+   }
+  ]
+ },
+ {
+  "name": "finishing vs xG, 2025-26",
+  "rows": [
+   {
+    "player__player_name": "Antoine Semenyo",
+    "goals_minus_xg": 5.9,
+    "expected_goals": 11.1,
+    "goals": 17
+   },
+   {
+    "player__player_name": "Junior Kroupi",
+    "goals_minus_xg": 4.690000000000001,
+    "expected_goals": 8.309999999999999,
+    "goals": 13
+   },
+   {
+    "player__player_name": "Morgan Gibbs-White",
+    "goals_minus_xg": 4.189999999999998,
+    "expected_goals": 10.810000000000002,
+    "goals": 15
+   },
+   {
+    "player__player_name": "Harry Wilson",
+    "goals_minus_xg": 4.120000000000001,
+    "expected_goals": 5.879999999999999,
+    "goals": 10
+   },
+   {
+    "player__player_name": "Kiernan Dewsbury-Hall",
+    "goals_minus_xg": 3.6500000000000004,
+    "expected_goals": 4.35,
+    "goals": 8
+   },
+   {
+    "player__player_name": "Carlos Henrique Casimiro",
+    "goals_minus_xg": 3.5600000000000005,
+    "expected_goals": 5.4399999999999995,
+    "goals": 9
+   },
+   {
+    "player__player_name": "Bruno Guimar\u00e3es Rodriguez Moura",
+    "goals_minus_xg": 3.41,
+    "expected_goals": 5.59,
+    "goals": 9
+   },
+   {
+    "player__player_name": "Morgan Rogers",
+    "goals_minus_xg": 3.16,
+    "expected_goals": 6.84,
+    "goals": 10
+   },
+   {
+    "player__player_name": "Ryan Gravenberch",
+    "goals_minus_xg": 3.11,
+    "expected_goals": 1.8900000000000001,
+    "goals": 5
+   },
+   {
+    "player__player_name": "Matheus Santos Carneiro da Cunha",
+    "goals_minus_xg": 3.1000000000000014,
+    "expected_goals": 6.899999999999999,
+    "goals": 10
+   }
+  ]
+ },
+ {
+  "name": "Arsenal points by month, 2023-24 (time grain)",
+  "rows": [
+   {
+    "metric_time__month": "2023-08-01 00:00:00",
+    "total_points": 136
+   },
+   {
+    "metric_time__month": "2023-09-01 00:00:00",
+    "total_points": 238
+   },
+   {
+    "metric_time__month": "2023-10-01 00:00:00",
+    "total_points": 189
+   },
+   {
+    "metric_time__month": "2023-11-01 00:00:00",
+    "total_points": 140
+   },
+   {
+    "metric_time__month": "2023-12-01 00:00:00",
+    "total_points": 283
+   },
+   {
+    "metric_time__month": "2024-01-01 00:00:00",
+    "total_points": 145
+   },
+   {
+    "metric_time__month": "2024-02-01 00:00:00",
+    "total_points": 307
+   },
+   {
+    "metric_time__month": "2024-03-01 00:00:00",
+    "total_points": 196
+   },
+   {
+    "metric_time__month": "2024-04-01 00:00:00",
+    "total_points": 385
+   },
+   {
+    "metric_time__month": "2024-05-01 00:00:00",
+    "total_points": 184
+   }
+  ]
+ },
+ {
+  "name": "best value defenders 2024-25 (ratio over an average)",
+  "rows": [
+   {
+    "player__player_name": "Jo\u0161ko Gvardiol",
+    "points_per_million": 25.125324114088155,
+    "total_points": 153
+   },
+   {
+    "player__player_name": "Trent Alexander-Arnold",
+    "points_per_million": 20.66127847171198,
+    "total_points": 148
+   },
+   {
+    "player__player_name": "Nikola Milenkovi\u0107",
+    "points_per_million": 30.628126737076155,
+    "total_points": 145
+   },
+   {
+    "player__player_name": "Virgil van Dijk",
+    "points_per_million": 22.519685039370078,
+    "total_points": 143
+   },
+   {
+    "player__player_name": "Daniel Mu\u00f1oz Mej\u00eda",
+    "points_per_million": 28.824786324786324,
+    "total_points": 142
+   },
+   {
+    "player__player_name": "Milos Kerkez",
+    "points_per_million": 27.85557986870897,
+    "total_points": 134
+   },
+   {
+    "player__player_name": "Marc Cucurella Saseta",
+    "points_per_million": 25.812053115423904,
+    "total_points": 133
+   },
+   {
+    "player__player_name": "Murillo Costa dos Santos",
+    "points_per_million": 28.132118451025054,
+    "total_points": 130
+   },
+   {
+    "player__player_name": "William Saliba",
+    "points_per_million": 20.949957591178965,
+    "total_points": 130
+   },
+   {
+    "player__player_name": "Ola Aina",
+    "points_per_million": 25.667546174142483,
+    "total_points": 128
+   }
+  ]
+ },
+ {
+  "name": "points and matches by year (two tables joined on metric_time)",
+  "rows": [
+   {
+    "metric_time__year": "2016-01-01 00:00:00",
+    "total_points": 15123,
+    "matches": 188
+   },
+   {
+    "metric_time__year": "2017-01-01 00:00:00",
+    "total_points": 33490,
+    "matches": 401
+   },
+   {
+    "metric_time__year": "2018-01-01 00:00:00",
+    "total_points": 30250,
+    "matches": 371
+   },
+   {
+    "metric_time__year": "2019-01-01 00:00:00",
+    "total_points": 30611,
+    "matches": 379
+   },
+   {
+    "metric_time__year": "2020-01-01 00:00:00",
+    "total_points": 27899,
+    "matches": 336
+   },
+   {
+    "metric_time__year": "2021-01-01 00:00:00",
+    "total_points": 33822,
+    "matches": 408
+   },
+   {
+    "metric_time__year": "2022-01-01 00:00:00",
+    "total_points": 29978,
+    "matches": 361
+   },
+   {
+    "metric_time__year": "2023-01-01 00:00:00",
+    "total_points": 33921,
+    "matches": 412
+   },
+   {
+    "metric_time__year": "2024-01-01 00:00:00",
+    "total_points": 30758,
+    "matches": 372
+   },
+   {
+    "metric_time__year": "2025-01-01 00:00:00",
+    "total_points": 34698,
+    "matches": 378
+   },
+   {
+    "metric_time__year": "2026-01-01 00:00:00",
+    "total_points": 22975,
+    "matches": 254
+   }
+  ]
+ },
+ {
+  "name": "clean sheets by position and season (IN filter)",
+  "rows": [
+   {
+    "player_fixture__season": "2022-23",
+    "player_fixture__position": "DEF",
+    "clean_sheets": 843
+   },
+   {
+    "player_fixture__season": "2022-23",
+    "player_fixture__position": "FWD",
+    "clean_sheets": 249
+   },
+   {
+    "player_fixture__season": "2022-23",
+    "player_fixture__position": "GKP",
+    "clean_sheets": 208
+   },
+   {
+    "player_fixture__season": "2022-23",
+    "player_fixture__position": "MID",
+    "clean_sheets": 1011
+   },
+   {
+    "player_fixture__season": "2023-24",
+    "player_fixture__position": "DEF",
+    "clean_sheets": 649
+   },
+   {
+    "player_fixture__season": "2023-24",
+    "player_fixture__position": "FWD",
+    "clean_sheets": 223
+   },
+   {
+    "player_fixture__season": "2023-24",
+    "player_fixture__position": "GKP",
+    "clean_sheets": 157
+   },
+   {
+    "player_fixture__season": "2023-24",
+    "player_fixture__position": "MID",
+    "clean_sheets": 874
+   }
+  ]
+ },
+ {
+  "name": "home win rate by season",
+  "rows": [
+   {
+    "fixture__match_season": "2016-17",
+    "home_win_rate": 0.4921052631578947
+   },
+   {
+    "fixture__match_season": "2017-18",
+    "home_win_rate": 0.45526315789473687
+   },
+   {
+    "fixture__match_season": "2018-19",
+    "home_win_rate": 0.4763157894736842
+   },
+   {
+    "fixture__match_season": "2019-20",
+    "home_win_rate": 0.45263157894736844
+   },
+   {
+    "fixture__match_season": "2020-21",
+    "home_win_rate": 0.37894736842105264
+   },
+   {
+    "fixture__match_season": "2021-22",
+    "home_win_rate": 0.42894736842105263
+   },
+   {
+    "fixture__match_season": "2022-23",
+    "home_win_rate": 0.4842105263157895
+   },
+   {
+    "fixture__match_season": "2023-24",
+    "home_win_rate": 0.4605263157894737
+   },
+   {
+    "fixture__match_season": "2024-25",
+    "home_win_rate": 0.40789473684210525
+   },
+   {
+    "fixture__match_season": "2025-26",
+    "home_win_rate": 0.4263157894736842
+   },
+   {
+    "fixture__match_season": "2026-27",
+    "home_win_rate": 0.38333333333333336
+   }
+  ]
+ },
+ {
+  "name": "goal involvements by club via the team entity, 2025-26",
+  "rows": [
+   {
+    "team__team_name": "Man City",
+    "goal_involvements": 142
+   },
+   {
+    "team__team_name": "Arsenal",
+    "goal_involvements": 133
+   },
+   {
+    "team__team_name": "Man Utd",
+    "goal_involvements": 126
+   },
+   {
+    "team__team_name": "Liverpool",
+    "goal_involvements": 116
+   },
+   {
+    "team__team_name": "Chelsea",
+    "goal_involvements": 112
+   }
+  ]
+ },
+ {
+  "name": "group by the player entity key",
+  "rows": [
+   {
+    "player": 118748,
+    "total_points": 2208
+   },
+   {
+    "player": 85971,
+    "total_points": 1660
+   },
+   {
+    "player": 78830,
+    "total_points": 1456
+   },
+   {
+    "player": 61366,
+    "total_points": 1450
+   },
+   {
+    "player": 103955,
+    "total_points": 1383
+   }
+  ]
+ },
+ {
+  "name": "no group-by: season totals for 2022-23",
+  "rows": [
+   {
+    "total_points": 31724,
+    "goals": 1038,
+    "goal_involvements": 1965
+   }
+  ]
+ }
+]

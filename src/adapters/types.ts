@@ -46,7 +46,8 @@ export type GuardCode =
   | "multiple_statements"
   | "statement_not_allowed"
   | "timeout"
-  | "table_not_found";
+  | "table_not_found"
+  | "schema_not_allowed";
 
 /** A query the server refused (or stopped) on purpose, as opposed to a SQL error from the engine. */
 export class GuardError extends Error {

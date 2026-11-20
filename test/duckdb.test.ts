@@ -133,3 +133,57 @@ describe("guards", () => {
     expect(r.rows).toEqual([{ n: 3 }]);
   });
 });
+
+describe("result values", () => {
+  it("returns BIGINT/DECIMAL as numbers when exact, and as strings when they'd lose precision", async () => {
+    const r = await adapter.query(
+      "select sum(total_points) as pts, 9007199254740993::bigint as too_big, 1.25::decimal(10,2) as d, 'nan'::double as n from player_gameweeks",
+      LIMITS,
+    );
+    expect(r.rows[0]).toEqual({ pts: expect.any(Number), too_big: "9007199254740993", d: 1.25, n: "NaN" });
+  });
+});
+
+describe("schema allow-list", () => {
+  let scoped: DuckDBAdapter;
+  let scopedCleanup: () => void;
+
+  beforeAll(async () => {
+    const fx = await makeFixtureDb();
+    scopedCleanup = fx.cleanup;
+    scoped = await DuckDBAdapter.open(fx.path, { allowedSchemas: ["marts"] });
+  });
+  afterAll(async () => {
+    await scoped.close();
+    scopedCleanup();
+  });
+
+  it("lists and describes only allowed schemas", async () => {
+    expect((await scoped.listTables()).map((t) => t.name)).toEqual(["marts.team_points"]);
+    await expect(scoped.describeTable("main.teams")).rejects.toMatchObject({ code: "table_not_found" });
+  });
+
+  it.each([
+    ["select * from marts.team_points"],
+    ['select * from "MARTS"."team_points"'],
+    ["with teams as (select * from marts.team_points) select * from teams"],
+    ["explain select * from marts.team_points"],
+    ["select 1 as one"],
+  ])("allows: %s", async (sql) => {
+    await expect(scoped.query(sql, LIMITS)).resolves.toBeTruthy();
+  });
+
+  it.each([
+    ["select * from teams"],
+    ["select * from main.teams"],
+    ['select * from "MAIN"."teams"'],
+    ["with x as (select * from main.teams) select * from x"],
+    ["select * from marts.team_points where name in (select name from main.teams)"],
+    ["select 1 union all select count(*) from main.player_gameweeks"],
+    ["select * from marts.team_points, lateral (select * from main.teams) t"],
+    ["explain select * from main.teams"],
+    ["select * from information_schema.tables"],
+  ])("refuses: %s", async (sql) => {
+    await expect(scoped.query(sql, LIMITS)).rejects.toMatchObject({ code: "schema_not_allowed" });
+  });
+});

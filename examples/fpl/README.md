@@ -5,11 +5,15 @@ player-fixture rows over 11 seasons, built with dbt on DuckDB, with a MetricFlow
 
 ```bash
 ./build.sh        # creates .venv, downloads data, runs dbt build -> fpl.duckdb
-claude mcp add fpl -- node ../../dist/cli.js --duckdb "$(pwd)/fpl.duckdb"
+claude mcp add fpl -- node "$(pwd)/../../dist/cli.js" --duckdb "$(pwd)/fpl.duckdb" \
+  --semantic-manifest "$(pwd)/target/semantic_manifest.json" --schemas marts
 ```
 
 Data: [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Premier-League) (MIT),
 pinned to commit `d7b05b5` (2026-10-22) so results are reproducible. It is downloaded, never committed.
+
+`make_parity_fixtures.py` asks MetricFlow the reference queries in `test/fixtures/fpl-parity-cases.json`;
+the server's compiler must return the same rows (`npm test`).
 
 ## Layers
 

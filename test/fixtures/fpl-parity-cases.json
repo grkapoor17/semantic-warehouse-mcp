@@ -1,0 +1,298 @@
+[
+ {
+  "name": "all-time top scorers (stable player key across seasons)",
+  "query": {
+   "metrics": [
+    "total_points",
+    "appearances",
+    "points_per_90"
+   ],
+   "group_by": [
+    "player__player_name"
+   ],
+   "order_by": [
+    {
+     "field": "total_points",
+     "descending": true
+    },
+    {
+     "field": "player__player_name"
+    }
+   ],
+   "limit": 10
+  }
+ },
+ {
+  "name": "2024-25 top players, managers excluded",
+  "query": {
+   "metrics": [
+    "total_points",
+    "goals",
+    "assists"
+   ],
+   "group_by": [
+    "player__player_name"
+   ],
+   "where": [
+    {
+     "field": "player_fixture__season",
+     "op": "=",
+     "value": "2024-25"
+    },
+    {
+     "field": "player_fixture__position",
+     "op": "!=",
+     "value": "MGR"
+    }
+   ],
+   "order_by": [
+    {
+     "field": "total_points",
+     "descending": true
+    },
+    {
+     "field": "player__player_name"
+    }
+   ],
+   "limit": 10
+  }
+ },
+ {
+  "name": "goals per match by season (fixtures table)",
+  "query": {
+   "metrics": [
+    "goals_per_match",
+    "matches"
+   ],
+   "group_by": [
+    "fixture__match_season"
+   ],
+   "order_by": [
+    {
+     "field": "fixture__match_season"
+    }
+   ]
+  }
+ },
+ {
+  "name": "finishing vs xG, 2025-26",
+  "query": {
+   "metrics": [
+    "goals_minus_xg",
+    "expected_goals",
+    "goals"
+   ],
+   "group_by": [
+    "player__player_name"
+   ],
+   "where": [
+    {
+     "field": "player_fixture__season",
+     "op": "=",
+     "value": "2025-26"
+    }
+   ],
+   "order_by": [
+    {
+     "field": "goals_minus_xg",
+     "descending": true
+    },
+    {
+     "field": "player__player_name"
+    }
+   ],
+   "limit": 10
+  }
+ },
+ {
+  "name": "Arsenal points by month, 2023-24 (time grain)",
+  "query": {
+   "metrics": [
+    "total_points"
+   ],
+   "group_by": [
+    "metric_time__month"
+   ],
+   "where": [
+    {
+     "field": "player_fixture__team_name",
+     "op": "=",
+     "value": "Arsenal"
+    },
+    {
+     "field": "player_fixture__season",
+     "op": "=",
+     "value": "2023-24"
+    }
+   ],
+   "order_by": [
+    {
+     "field": "metric_time__month"
+    }
+   ]
+  }
+ },
+ {
+  "name": "best value defenders 2024-25 (ratio over an average)",
+  "query": {
+   "metrics": [
+    "points_per_million",
+    "total_points"
+   ],
+   "group_by": [
+    "player__player_name"
+   ],
+   "where": [
+    {
+     "field": "player_fixture__season",
+     "op": "=",
+     "value": "2024-25"
+    },
+    {
+     "field": "player_fixture__position",
+     "op": "=",
+     "value": "DEF"
+    }
+   ],
+   "order_by": [
+    {
+     "field": "total_points",
+     "descending": true
+    },
+    {
+     "field": "player__player_name"
+    }
+   ],
+   "limit": 10
+  }
+ },
+ {
+  "name": "points and matches by year (two tables joined on metric_time)",
+  "query": {
+   "metrics": [
+    "total_points",
+    "matches"
+   ],
+   "group_by": [
+    "metric_time__year"
+   ],
+   "order_by": [
+    {
+     "field": "metric_time__year"
+    }
+   ]
+  }
+ },
+ {
+  "name": "clean sheets by position and season (IN filter)",
+  "query": {
+   "metrics": [
+    "clean_sheets"
+   ],
+   "group_by": [
+    "player_fixture__season",
+    "player_fixture__position"
+   ],
+   "where": [
+    {
+     "field": "player_fixture__season",
+     "op": "in",
+     "value": [
+      "2022-23",
+      "2023-24"
+     ]
+    }
+   ],
+   "order_by": [
+    {
+     "field": "player_fixture__season"
+    },
+    {
+     "field": "player_fixture__position"
+    }
+   ]
+  }
+ },
+ {
+  "name": "home win rate by season",
+  "query": {
+   "metrics": [
+    "home_win_rate"
+   ],
+   "group_by": [
+    "fixture__match_season"
+   ],
+   "order_by": [
+    {
+     "field": "fixture__match_season"
+    }
+   ]
+  }
+ },
+ {
+  "name": "goal involvements by club via the team entity, 2025-26",
+  "query": {
+   "metrics": [
+    "goal_involvements"
+   ],
+   "group_by": [
+    "team__team_name"
+   ],
+   "where": [
+    {
+     "field": "player_fixture__season",
+     "op": "=",
+     "value": "2025-26"
+    }
+   ],
+   "order_by": [
+    {
+     "field": "goal_involvements",
+     "descending": true
+    },
+    {
+     "field": "team__team_name"
+    }
+   ],
+   "limit": 5
+  }
+ },
+ {
+  "name": "group by the player entity key",
+  "query": {
+   "metrics": [
+    "total_points"
+   ],
+   "group_by": [
+    "player"
+   ],
+   "order_by": [
+    {
+     "field": "total_points",
+     "descending": true
+    },
+    {
+     "field": "player"
+    }
+   ],
+   "limit": 5
+  }
+ },
+ {
+  "name": "no group-by: season totals for 2022-23",
+  "query": {
+   "metrics": [
+    "total_points",
+    "goals",
+    "goal_involvements"
+   ],
+   "where": [
+    {
+     "field": "player_fixture__season",
+     "op": "=",
+     "value": "2022-23"
+    }
+   ]
+  }
+ }
+]

@@ -25,22 +25,34 @@ const ALLOWED: ReadonlySet<StatementType> = new Set([StatementType.SELECT, State
 
 const HIDDEN_SCHEMAS = ["information_schema", "pg_catalog"];
 
+export interface DuckDBOptions {
+  threads?: number;
+  memoryLimit?: string;
+  /**
+   * Only these schemas are listed AND queryable (e.g. ["marts"]). Enforced on every query by walking
+   * DuckDB's own parse tree for table references, not just hidden from list_tables.
+   */
+  allowedSchemas?: string[];
+}
+
 export class DuckDBAdapter implements WarehouseAdapter {
   readonly dialect = "duckdb";
 
   private constructor(
     private readonly instance: DuckDBInstance,
     private readonly conn: DuckDBConnection,
+    private readonly allowedSchemas: Set<string> | null,
   ) {}
 
   /** Opens an existing DuckDB database file read-only inside the sandbox. */
-  static async open(path: string, options: { threads?: number; memoryLimit?: string } = {}): Promise<DuckDBAdapter> {
+  static async open(path: string, options: DuckDBOptions = {}): Promise<DuckDBAdapter> {
     const config: Record<string, string> = { ...SANDBOX };
     if (options.threads) config.threads = String(options.threads);
     if (options.memoryLimit) config.memory_limit = options.memoryLimit;
     const instance = await DuckDBInstance.create(path, config);
     const conn = await instance.connect();
-    return new DuckDBAdapter(instance, conn);
+    const allowed = options.allowedSchemas?.length ? new Set(options.allowedSchemas.map((s) => s.toLowerCase())) : null;
+    return new DuckDBAdapter(instance, conn, allowed);
   }
 
   async listTables(): Promise<TableInfo[]> {
@@ -55,6 +67,7 @@ export class DuckDBAdapter implements WarehouseAdapter {
     return reader
       .getRowObjectsJS()
       .filter((r) => !HIDDEN_SCHEMAS.includes(String(r.schema_name)))
+      .filter((r) => !this.allowedSchemas || this.allowedSchemas.has(String(r.schema_name).toLowerCase()))
       .map((r) => toTableInfo(r));
   }
 
@@ -110,6 +123,7 @@ export class DuckDBAdapter implements WarehouseAdapter {
         `Only SELECT (including WITH ... SELECT) and EXPLAIN are allowed; got ${StatementType[prepared.statementType]}.`,
       );
     }
+    if (this.allowedSchemas) await this.checkSchemas(sql, prepared.statementType);
 
     const started = performance.now();
     let timedOut = false;
@@ -122,10 +136,16 @@ export class DuckDBAdapter implements WarehouseAdapter {
       const reader = await prepared.streamAndReadUntil(limits.maxRows + 1);
       const all = reader.getRowObjectsJson();
       const names = reader.columnNames();
-      const types = reader.columnTypes();
+      const types = reader.columnTypes().map(String);
+      const numeric = names.filter((_, i) => WIDE_NUMERIC.test(types[i]!));
+      const rows = all.slice(0, limits.maxRows).map((row) => {
+        const out = row as Record<string, unknown>;
+        for (const n of numeric) out[n] = toNumber(out[n]);
+        return out;
+      });
       return {
-        columns: names.map((n, i) => ({ name: n, type: String(types[i]) })),
-        rows: all.slice(0, limits.maxRows) as Record<string, unknown>[],
+        columns: names.map((n, i) => ({ name: n, type: types[i]! })),
+        rows,
         truncated: all.length > limits.maxRows,
         elapsedMs: Math.round(performance.now() - started),
       };
@@ -139,10 +159,69 @@ export class DuckDBAdapter implements WarehouseAdapter {
     }
   }
 
+  /**
+   * Refuse queries that read a table outside the allowed schemas. Uses DuckDB's own parser
+   * (json_serialize_sql) to find every base-table reference, including inside CTEs, subqueries
+   * and set operations. CTE names are not tables; unqualified names resolve to schema "main".
+   * Fails closed: anything we can't parse is refused.
+   */
+  private async checkSchemas(sql: string, type: StatementType): Promise<void> {
+    let inner = sql;
+    if (type === StatementType.EXPLAIN) {
+      const m = /^\s*explain\s+(analyze\s+)?/i.exec(sql);
+      if (!m) throw new GuardError("schema_not_allowed", "Could not check the tables this EXPLAIN reads; run the query without EXPLAIN.");
+      inner = sql.slice(m[0].length);
+    }
+    const reader = await this.conn.runAndReadAll("select json_serialize_sql($1::varchar) as ast", [inner]);
+    const ast = JSON.parse(String(reader.getRowObjectsJS()[0]?.ast)) as { error?: boolean; statements?: unknown };
+    if (ast.error || !ast.statements) {
+      throw new GuardError("schema_not_allowed", "Could not check which tables this query reads, so it was refused.");
+    }
+    const { tables, ctes } = collectRefs(ast.statements);
+    const allowed = [...this.allowedSchemas!].join(", ");
+    for (const t of tables) {
+      if (!t.schema && ctes.has(t.table.toLowerCase())) continue;
+      const schema = (t.schema || "main").toLowerCase();
+      if (!this.allowedSchemas!.has(schema)) {
+        throw new GuardError(
+          "schema_not_allowed",
+          `"${t.schema ? `${t.schema}.` : ""}${t.table}" is outside the allowed schemas (${allowed}). Call list_tables to see what you can query.`,
+        );
+      }
+    }
+  }
+
   async close(): Promise<void> {
     this.conn.closeSync();
     this.instance.closeSync();
   }
+}
+
+/** Integer and decimal types that DuckDB's JSON conversion returns as strings. */
+const WIDE_NUMERIC = /^(BIGINT|HUGEINT|UBIGINT|UHUGEINT|DECIMAL\(\d+,\s*\d+\))$/;
+
+/** Return a JS number when it is exact (or, for decimals, a normal double); otherwise keep the string. */
+function toNumber(v: unknown): unknown {
+  if (typeof v !== "string") return v;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return v;
+  if (/^-?\d+$/.test(v)) return Number.isSafeInteger(n) ? n : v;
+  return Math.abs(n) < 2 ** 53 ? n : v;
+}
+
+function collectRefs(node: unknown, acc = { tables: [] as { schema: string; table: string }[], ctes: new Set<string>() }) {
+  if (Array.isArray(node)) {
+    for (const n of node) collectRefs(n, acc);
+  } else if (node && typeof node === "object") {
+    const o = node as Record<string, unknown>;
+    if (o.type === "BASE_TABLE" && typeof o.table_name === "string") {
+      acc.tables.push({ schema: String(o.schema_name ?? ""), table: o.table_name });
+    }
+    const cteMap = (o.cte_map as { map?: { key: string }[] } | undefined)?.map;
+    if (Array.isArray(cteMap)) for (const e of cteMap) acc.ctes.add(String(e.key).toLowerCase());
+    for (const v of Object.values(o)) collectRefs(v, acc);
+  }
+  return acc;
 }
 
 function toTableInfo(r: Record<string, unknown>): TableInfo {
