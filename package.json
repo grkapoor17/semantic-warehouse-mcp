@@ -1,0 +1,52 @@
+{
+  "name": "semantic-warehouse-mcp",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "duckdb",
+    "dbt",
+    "semantic-layer",
+    "text-to-sql",
+    "claude"
+  ],
+  "author": "Gautam Kapoor",
+  "license": "MIT",
+  "description": "MCP server that gives AI agents guarded, read-only SQL access to your warehouse, plus dbt semantic-layer metrics.",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7",
+    "@duckdb/node-api": "1.5.6-r.2",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "4.1.12",
+    "@types/node": "22.20.5"
+  },
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "semantic-warehouse-mcp": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grkapoor17/semantic-warehouse-mcp.git"
+  }
+}
