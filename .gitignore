@@ -1,12 +1,16 @@
-node_modules/
-dist/
+# Generated. No trailing slashes: these may be symlinks to *.nosync folders (kept out of iCloud sync).
+node_modules
+dist
+coverage
+.env
+*.nosync
 *.duckdb
 *.duckdb.wal
-data/
-.env
-coverage/
-.venv/
-examples/fpl/target/
-examples/fpl/logs/
-examples/fpl/dbt_packages/
+
+# examples/fpl build outputs
+.venv
+examples/fpl/data
+examples/fpl/target
+examples/fpl/logs
+examples/fpl/dbt_packages
 examples/fpl/.user.yml

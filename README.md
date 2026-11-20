@@ -58,6 +58,16 @@ multi-hop joins. These are refused with a clear message instead of being guessed
 **Known DuckDB quirk:** if the database file has the same name as one of its schemas (`shop.duckdb` with schema
 `shop`), DuckDB treats `shop.table` as ambiguous. Rename the file.
 
+## Agent Skill
+
+[`skills/warehouse-analysis`](skills/warehouse-analysis/SKILL.md) teaches Claude a workflow on top of these tools:
+use metrics before hand-written SQL, look up exact names before filtering, require a minimum sample when ranking
+by a rate, respect the grain, and state the definitions used in the answer. Its
+[query patterns](skills/warehouse-analysis/references/query-patterns.md) are tested against the example warehouse.
+
+- **Claude Code:** copy the folder to `~/.claude/skills/` (all projects) or `.claude/skills/` (one project).
+- **Claude apps:** zip the `warehouse-analysis` folder and upload it under Settings → Capabilities → Skills.
+
 ## Use with Claude Code
 
 ```bash
@@ -77,7 +87,7 @@ Try it on real data: [`examples/fpl`](examples/fpl) builds an 11-season Fantasy 
 
 ```bash
 npm test        # vitest: guardrail attack suite, compiler unit tests, MCP surface tests
-                # + MetricFlow parity tests when examples/fpl/fpl.duckdb has been built
+                # + MetricFlow parity tests when examples/fpl/data/fpl.duckdb has been built
 npm run build
 ```
 

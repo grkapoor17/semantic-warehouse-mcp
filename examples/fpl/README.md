@@ -4,8 +4,8 @@ A small but realistic warehouse for trying the server and for the text-to-SQL ev
 player-fixture rows over 11 seasons, built with dbt on DuckDB, with a MetricFlow semantic layer.
 
 ```bash
-./build.sh        # creates .venv, downloads data, runs dbt build -> fpl.duckdb
-claude mcp add fpl -- node "$(pwd)/../../dist/cli.js" --duckdb "$(pwd)/fpl.duckdb" \
+./build.sh        # creates .venv, downloads data, runs dbt build -> data/fpl.duckdb
+claude mcp add fpl -- node "$(pwd)/../../dist/cli.js" --duckdb "$(pwd)/data/fpl.duckdb" \
   --semantic-manifest "$(pwd)/target/semantic_manifest.json" --schemas marts
 ```
 

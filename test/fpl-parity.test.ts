@@ -10,7 +10,7 @@ import { SemanticCatalog } from "../src/semantic/catalog.js";
 import { compileMetricQuery, type MetricQuery } from "../src/semantic/compile.js";
 import type { SemanticManifest } from "../src/semantic/manifest.js";
 
-const DB = "examples/fpl/fpl.duckdb";
+const DB = "examples/fpl/data/fpl.duckdb";
 const MANIFEST = "examples/fpl/target/semantic_manifest.json";
 const ready = existsSync(DB) && existsSync(MANIFEST);
 

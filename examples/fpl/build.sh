@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds examples/fpl/fpl.duckdb: download pinned FPL history, then dbt build (models + 44 tests).
+# Builds examples/fpl/data/fpl.duckdb: download pinned FPL history, then dbt build (models + 44 tests).
 set -euo pipefail
 cd "$(dirname "$0")"
 if [ ! -d .venv ]; then
@@ -7,6 +7,6 @@ if [ ! -d .venv ]; then
   .venv/bin/pip install -q -r requirements.txt
 fi
 .venv/bin/python download.py
-rm -f fpl.duckdb
+rm -f data/fpl.duckdb
 DBT_PROFILES_DIR=. .venv/bin/dbt build
-echo "Built $(pwd)/fpl.duckdb"
+echo "Built $(pwd)/data/fpl.duckdb"

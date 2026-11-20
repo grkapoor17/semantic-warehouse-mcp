@@ -3,5 +3,5 @@ fpl:
   outputs:
     dev:
       type: duckdb
-      path: fpl.duckdb
+      path: data/fpl.duckdb
       threads: 4
