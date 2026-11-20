@@ -1,0 +1,355 @@
+version: 2
+
+# The FPL semantic layer: the agreed definitions an agent should use instead of guessing from raw columns.
+# Compiled by `dbt parse` into target/semantic_manifest.json, which semantic-warehouse-mcp reads.
+
+semantic_models:
+  - name: player_fixtures
+    description: >
+      One row per player per Premier League fixture. A gameweek can hold 0, 1 or 2 fixtures for a
+      player, so gameweek totals are sums over fixtures. Includes 20 real managers in 2024-25
+      (position MGR) from the "assistant manager" chip; filter position != 'MGR' for player-only questions.
+    model: ref('fct_player_fixtures')
+    defaults:
+      agg_time_dimension: kickoff_date
+    entities:
+      - name: player_fixture
+        type: primary
+        expr: player_fixture_id
+      - name: player
+        type: foreign
+        expr: player_code
+      - name: player_season
+        type: foreign
+        expr: player_season_id
+      - name: team
+        type: foreign
+        expr: team_code
+      - name: fixture
+        type: foreign
+        expr: fixture_id
+    dimensions:
+      - name: kickoff_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: season
+        type: categorical
+        description: Season label, e.g. '2024-25'. Seasons run August to May.
+      - name: gameweek
+        type: categorical
+        description: FPL gameweek 1-38 (normalised; 2019-20's published rounds 39-47 are GW 30-38).
+      - name: position
+        type: categorical
+        description: The player's FPL position that season (GKP, DEF, MID, FWD, MGR).
+      - name: team_name
+        type: categorical
+        description: The player's club in this fixture (correct across mid-season transfers).
+      - name: opponent_team_name
+        type: categorical
+      - name: was_home
+        type: categorical
+      - name: result
+        type: categorical
+        description: W, D or L from the player's club's point of view.
+    measures:
+      - name: total_points
+        agg: sum
+      - name: goals
+        agg: sum
+      - name: assists
+        agg: sum
+      - name: minutes_played
+        agg: sum
+      - name: appearances
+        description: Fixtures with at least one minute played.
+        agg: sum
+        expr: case when minutes_played > 0 then 1 else 0 end
+      - name: starts
+        description: Only recorded from 2022-23; NULL before.
+        agg: sum
+      - name: clean_sheets
+        agg: sum
+      - name: goals_conceded
+        agg: sum
+      - name: saves
+        agg: sum
+      - name: bonus_points
+        agg: sum
+      - name: yellow_cards
+        agg: sum
+      - name: red_cards
+        agg: sum
+      - name: xg
+        description: Expected goals. Only recorded from 2022-23; NULL before.
+        agg: sum
+      - name: xa
+        description: Expected assists. Only recorded from 2022-23; NULL before.
+        agg: sum
+      - name: defensive_contribution
+        description: Only recorded from 2025-26; NULL before.
+        agg: sum
+      - name: avg_price
+        description: Average price in £m across the fixtures in scope.
+        agg: average
+        expr: price
+
+  - name: players
+    description: One row per real-world player, keyed by the stable FPL player code.
+    model: ref('dim_players')
+    entities:
+      - name: player
+        type: primary
+        expr: player_code
+    dimensions:
+      - name: player_name
+        type: categorical
+        description: Full name (latest season). Use this, not web_name, to identify a player; web_name is not unique.
+      - name: web_name
+        type: categorical
+      - name: latest_position
+        type: categorical
+
+  - name: teams
+    description: One row per club, keyed by the stable FPL team code.
+    model: ref('dim_teams')
+    entities:
+      - name: team
+        type: primary
+        expr: team_code
+    dimensions:
+      - name: team_name
+        type: categorical
+      - name: short_name
+        type: categorical
+
+  - name: player_seasons
+    description: One row per player per season with that season's prices.
+    model: ref('dim_player_seasons')
+    entities:
+      - name: player_season
+        type: primary
+        expr: player_season_id
+    dimensions:
+      - name: start_price
+        type: categorical
+        description: Price in £m at the start of the season.
+      - name: end_price
+        type: categorical
+        description: Price in £m at the end of the season.
+
+  - name: fixtures
+    description: One row per Premier League match.
+    model: ref('fct_fixtures')
+    defaults:
+      agg_time_dimension: match_date
+    entities:
+      - name: fixture
+        type: primary
+        expr: fixture_id
+    dimensions:
+      - name: match_date
+        type: time
+        expr: kickoff_date
+        type_params:
+          time_granularity: day
+      - name: match_season
+        type: categorical
+        expr: season
+      - name: match_gameweek
+        type: categorical
+        expr: gameweek
+    measures:
+      - name: matches
+        agg: count
+        expr: fixture_id
+      - name: match_goals
+        agg: sum
+        expr: home_goals + away_goals
+      - name: home_wins
+        agg: sum
+        expr: case when home_goals > away_goals then 1 else 0 end
+
+metrics:
+  - name: total_points
+    label: FPL points
+    description: FPL points scored (sum over fixtures).
+    type: simple
+    type_params:
+      measure: total_points
+
+  - name: goals
+    label: Goals
+    type: simple
+    type_params:
+      measure: goals
+
+  - name: assists
+    label: Assists (FPL)
+    description: FPL-awarded assists (FPL's definition is broader than Opta's).
+    type: simple
+    type_params:
+      measure: assists
+
+  - name: goal_involvements
+    label: Goal involvements
+    description: Goals plus FPL assists.
+    type: derived
+    type_params:
+      expr: goals + assists
+      metrics:
+        - name: goals
+        - name: assists
+
+  - name: minutes_played
+    label: Minutes played
+    type: simple
+    type_params:
+      measure: minutes_played
+
+  - name: appearances
+    label: Appearances
+    description: Fixtures with at least one minute played.
+    type: simple
+    type_params:
+      measure: appearances
+
+  - name: starts
+    label: Starts
+    description: Only available from 2022-23.
+    type: simple
+    type_params:
+      measure: starts
+
+  - name: clean_sheets
+    label: Clean sheets
+    description: FPL clean sheets (requires 60+ minutes played).
+    type: simple
+    type_params:
+      measure: clean_sheets
+
+  - name: goals_conceded
+    label: Goals conceded while on the pitch
+    type: simple
+    type_params:
+      measure: goals_conceded
+
+  - name: saves
+    label: Saves
+    type: simple
+    type_params:
+      measure: saves
+
+  - name: bonus_points
+    label: Bonus points
+    type: simple
+    type_params:
+      measure: bonus_points
+
+  - name: yellow_cards
+    label: Yellow cards
+    type: simple
+    type_params:
+      measure: yellow_cards
+
+  - name: red_cards
+    label: Red cards
+    type: simple
+    type_params:
+      measure: red_cards
+
+  - name: expected_goals
+    label: xG
+    description: Expected goals. Only available from 2022-23.
+    type: simple
+    type_params:
+      measure: xg
+
+  - name: expected_assists
+    label: xA
+    description: Expected assists. Only available from 2022-23.
+    type: simple
+    type_params:
+      measure: xa
+
+  - name: goals_minus_xg
+    label: Goals minus xG
+    description: Finishing over/under-performance. Only meaningful from 2022-23.
+    type: derived
+    type_params:
+      expr: goals - expected_goals
+      metrics:
+        - name: goals
+        - name: expected_goals
+
+  - name: defensive_contribution
+    label: Defensive contribution
+    description: Only available from 2025-26.
+    type: simple
+    type_params:
+      measure: defensive_contribution
+
+  - name: points_per_90
+    label: Points per 90 minutes
+    description: FPL points per 90 minutes played. Filter to a minimum minutes_played to avoid tiny samples.
+    type: derived
+    type_params:
+      expr: total_points * 90.0 / nullif(minutes_played, 0)
+      metrics:
+        - name: total_points
+        - name: minutes_played
+
+  - name: points_per_appearance
+    label: Points per appearance
+    type: ratio
+    type_params:
+      numerator: total_points
+      denominator: appearances
+
+  - name: avg_price
+    label: Average price (£m)
+    description: Average FPL price in £m across the fixtures in scope.
+    type: simple
+    type_params:
+      measure: avg_price
+
+  - name: points_per_million
+    label: Points per £m
+    description: FPL points divided by average price in £m over the same fixtures (a value-for-money measure).
+    type: ratio
+    type_params:
+      numerator: total_points
+      denominator: avg_price
+
+  - name: matches
+    label: Matches
+    type: simple
+    type_params:
+      measure: matches
+
+  - name: match_goals
+    label: Goals scored in matches
+    description: Total goals in matches (both teams). Counts each match once, unlike summing player goals.
+    type: simple
+    type_params:
+      measure: match_goals
+
+  - name: home_wins
+    label: Home wins
+    type: simple
+    type_params:
+      measure: home_wins
+
+  - name: goals_per_match
+    label: Goals per match
+    type: ratio
+    type_params:
+      numerator: match_goals
+      denominator: matches
+
+  - name: home_win_rate
+    label: Home win rate
+    type: ratio
+    type_params:
+      numerator: home_wins
+      denominator: matches

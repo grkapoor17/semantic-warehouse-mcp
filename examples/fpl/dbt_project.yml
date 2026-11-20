@@ -1,0 +1,26 @@
+name: fpl
+version: "1.0.0"
+profile: fpl
+config-version: 2
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # Relative to examples/fpl, where dbt is run from. Filled by download.py.
+  raw_dir: "data/raw"
+
+models:
+  fpl:
+    raw:
+      +schema: raw
+      +materialized: table
+    staging:
+      +schema: staging
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table

@@ -1,0 +1,122 @@
+version: 2
+
+models:
+  - name: dim_players
+    description: >
+      One row per real-world player (or manager, see position MGR), across all seasons.
+      `player_code` is FPL's stable id. Do NOT join on FPL's per-season element id; it changes every season.
+    columns:
+      - name: player_code
+        description: Stable player id across seasons (FPL `code`).
+        data_tests: [unique, not_null]
+      - name: player_name
+        description: Full name as of the player's latest season.
+      - name: web_name
+        description: Short display name as of the latest season (e.g. "M.Salah"). Not unique.
+      - name: latest_position
+        description: GKP, DEF, MID, FWD, or MGR (latest season).
+      - name: first_season
+      - name: last_season
+      - name: seasons_in_dataset
+
+  - name: dim_teams
+    description: One row per club, keyed by FPL's stable `team_code` (per-season team ids are resolved away).
+    columns:
+      - name: team_code
+        data_tests: [unique, not_null]
+      - name: team_name
+        description: Club name as of its latest season in the data.
+        data_tests: [not_null]
+      - name: short_name
+        description: Three-letter code (only for clubs present from 2019-20 on).
+
+  - name: dim_player_seasons
+    description: >
+      One row per player per season with that season's position and prices.
+      Position can change between seasons, so filter on it here or in fct_player_fixtures.
+    columns:
+      - name: player_season_id
+        data_tests: [unique, not_null]
+      - name: season
+        description: Season label like '2024-25'.
+      - name: player_code
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_players'), field: player_code}}
+      - name: position
+        data_tests:
+          - accepted_values: {arguments: {values: [GKP, DEF, MID, FWD, MGR]}}
+      - name: snapshot_team_code
+        description: Club at the time of FPL's season snapshot (end of season). For per-match clubs use fct_player_fixtures.team_code.
+      - name: start_price
+        description: Price in £m at the start of the season.
+      - name: end_price
+        description: Price in £m at the end of the season (or now, for the current season).
+      - name: fpl_total_points
+        description: FPL's own season total. Can differ slightly from summing fct_player_fixtures for the in-progress season.
+
+  - name: fct_player_fixtures
+    description: >
+      One row per player per Premier League fixture (2016-17 to 2026-27 GW6). Grain: player x fixture.
+      A gameweek can contain two fixtures for a player (double gameweek) or none (blank), so
+      "points in gameweek N" must SUM over fixtures. Gameweeks are normalised (2019-20's rounds 39-47 are GW 30-38).
+      xg/xa/xgi/xgc and starts are NULL before 2022-23; defensive_contribution is NULL before 2025-26.
+    columns:
+      - name: player_fixture_id
+        data_tests: [unique, not_null]
+      - name: player_season_id
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_player_seasons'), field: player_season_id}}
+      - name: fixture_id
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fct_fixtures'), field: fixture_id}}
+      - name: season
+        data_tests: [not_null]
+      - name: gameweek
+        data_tests: [not_null]
+      - name: kickoff_at
+        description: Kickoff time, UTC.
+        data_tests: [not_null]
+      - name: player_code
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_players'), field: player_code}}
+      - name: position
+        description: The player's position that season.
+      - name: team_code
+        description: The player's club in THIS fixture (handles mid-season transfers).
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_teams'), field: team_code}}
+      - name: opponent_team_code
+        data_tests: [not_null]
+      - name: result
+        description: W/D/L from the player's team's point of view.
+      - name: minutes_played
+        data_tests: [not_null]
+      - name: appeared
+        description: True when the player played at least one minute.
+      - name: total_points
+        description: FPL points scored in this fixture.
+        data_tests: [not_null]
+      - name: price
+        description: Player price in £m at the time of the fixture.
+
+  - name: fct_fixtures
+    description: One row per Premier League match.
+    columns:
+      - name: fixture_id
+        data_tests: [unique, not_null]
+      - name: home_team_code
+        data_tests: [not_null]
+      - name: away_team_code
+        data_tests: [not_null]
+
+  - name: metricflow_time_spine
+    description: Daily calendar used by the semantic layer.
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        granularity: day

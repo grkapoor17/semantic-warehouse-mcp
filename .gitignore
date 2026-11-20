@@ -5,3 +5,8 @@ dist/
 data/
 .env
 coverage/
+.venv/
+examples/fpl/target/
+examples/fpl/logs/
+examples/fpl/dbt_packages/
+examples/fpl/.user.yml
