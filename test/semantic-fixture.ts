@@ -11,11 +11,12 @@ import type { SemanticManifest } from "../src/semantic/manifest.js";
  *   refunds:   2024-03-02 $20 · 2024-03-15 $5
  * Revenue: Jan 100, Feb 80, Mar 20 = 200. Refunds: Mar 25. US revenue 170, UK 30.
  */
-export async function makeShopDb(): Promise<{ path: string; cleanup: () => void }> {
+export async function makeShopDb(schema = "shop"): Promise<{ path: string; cleanup: () => void }> {
   const dir = mkdtempSync(join(tmpdir(), "swmcp-shop-"));
   const path = join(dir, "warehouse.duckdb");
   const db = await DuckDBInstance.create(path);
   const c = await db.connect();
+  // Tables are written under "shop" and renamed to the requested schema (the eval arms use "marts").
   await c.run(`
     create schema shop;
     create table shop.customers (customer_id int, name varchar, country varchar);
@@ -30,6 +31,10 @@ export async function makeShopDb(): Promise<{ path: string; cleanup: () => void 
     create table internal.secrets (s varchar);
     insert into internal.secrets values ('do not read');
   `);
+  if (schema !== "shop") {
+    await c.run(`create schema ${schema}`);
+    for (const t of ["customers", "orders", "refunds"]) await c.run(`create table ${schema}.${t} as select * from shop.${t}; drop table shop.${t}`);
+  }
   c.closeSync();
   db.closeSync();
   return { path, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
