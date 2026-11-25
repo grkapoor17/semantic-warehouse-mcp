@@ -1,0 +1,575 @@
+# semantic-warehouse-mcp eval: 50 questions over the FPL example warehouse (2016-17 to 2026-27 GW6).
+#
+# Each question has a GOLD answer computed by hand-written SQL against the marts tables (never by the
+# server's own metric compiler, so the eval can't grade the compiler with itself). Gold SQL uses stable
+# player_code / team names so it doesn't depend on name matching. Run `python eval/build_gold.py` to
+# compute eval/gold.json.
+#
+# Fields
+#   question     what the agent is asked, verbatim
+#   answer_type  number | text | entity | ranking | set | table | unavailable
+#                  number      one value; gold_sql returns column `value`
+#                  text        one string (a season, a month); column `value`
+#                  entity      one player/team; columns `player_code` or `team_name`, plus `value`; top row wins
+#                  ranking     ordered top-N (`top`); same columns as entity
+#                  set         unordered group (e.g. a tie); every row returned is in the set
+#                  table       several labelled values; columns `key`, `value`
+#                  unavailable the data doesn't contain it; the agent should say so, not invent a number
+#   top          for entity/ranking: how many rows count (the build checks for ties at the cut-off)
+#   tolerance    absolute tolerance for numbers (default 0 for integers, 0.01 otherwise)
+#   path         metrics = answerable with query_metrics alone; sql = needs run_query (no metric covers it)
+#   tags         the trap(s) it tests (see the list at the bottom)
+#   why          one line on what makes it hard
+
+questions:
+
+# ---------------------------------------------------------------- warm-up: plain lookups and totals
+- id: q01
+  question: "How many FPL points did Mohamed Salah score in the 2024-25 season?"
+  answer_type: number
+  gold_sql: select sum(total_points) as value from marts.fct_player_fixtures where player_code = 118748 and season = '2024-25'
+  path: metrics
+  tags: [warmup]
+  why: "Baseline. Should be easy for every setup."
+
+- id: q02
+  question: "Who scored the most FPL points in the 2023-24 season?"
+  answer_type: entity
+  top: 1
+  gold_sql: |
+    select player_code, sum(total_points) as value from marts.fct_player_fixtures
+    where season = '2023-24' group by player_code order by value desc
+  path: metrics
+  tags: [warmup]
+  why: "Baseline ranking."
+
+- id: q03
+  question: "How many goals were scored in total in the 2023-24 Premier League season?"
+  answer_type: number
+  gold_sql: select sum(home_goals + away_goals) as value from marts.fct_fixtures where season = '2023-24'
+  path: metrics
+  tags: [own_goals, team_vs_player]
+  why: "Summing player goals misses own goals; the match table has the true total."
+
+- id: q04
+  question: "What was the average number of goals per match in 2018-19?"
+  answer_type: number
+  tolerance: 0.01
+  gold_sql: select avg(home_goals + away_goals) as value from marts.fct_fixtures where season = '2018-19'
+  path: metrics
+  tags: [team_vs_player]
+  why: "Per-match average must come from matches, not player rows."
+
+- id: q05
+  question: "How many matches of the 2026-27 season are in the data so far?"
+  answer_type: number
+  gold_sql: select count(*) as value from marts.fct_fixtures where season = '2026-27'
+  path: metrics
+  tags: [warmup, grain]
+  why: "Counting player rows instead of matches overcounts by ~25x."
+
+- id: q06
+  question: "Which club's players scored the most combined FPL points in 2025-26?"
+  answer_type: entity
+  top: 1
+  gold_sql: |
+    select team_name, sum(total_points) as value from marts.fct_player_fixtures
+    where season = '2025-26' group by team_name order by value desc
+  path: metrics
+  tags: [warmup]
+  why: "Per-fixture club (not end-of-season club) is the right attribution."
+
+- id: q07
+  question: "How many FPL assists did Kevin De Bruyne record in 2019-20?"
+  answer_type: number
+  gold_sql: select sum(assists) as value from marts.fct_player_fixtures where player_code = 61366 and season = '2019-20'
+  path: metrics
+  tags: [warmup, knowledge_vs_data]
+  why: "The answer must come from the data, not from remembered real-world stats."
+
+- id: q08
+  question: "Who were the top 5 goalscorers in 2022-23?"
+  answer_type: ranking
+  top: 5
+  gold_sql: |
+    select player_code, sum(goals) as value from marts.fct_player_fixtures
+    where season = '2022-23' group by player_code order by value desc
+  path: metrics
+  tags: [warmup]
+  why: "Baseline top-N."
+
+- id: q09
+  question: "How many yellow cards has Bruno Fernandes received across all seasons in the data?"
+  answer_type: number
+  gold_sql: select sum(yellow_cards) as value from marts.fct_player_fixtures where player_code = 141746
+  path: metrics
+  tags: [name_mismatch, cross_season]
+  why: "His full name in the data is \"Bruno Borges Fernandes\", so an exact match on \"Bruno Fernandes\" finds nothing."
+
+- id: q10
+  question: "Which completed season had the highest home win rate?"
+  answer_type: text
+  gold_sql: |
+    select season as value from marts.fct_fixtures where season < '2026-27'
+    group by season order by avg(case when home_goals > away_goals then 1.0 else 0 end) desc limit 1
+  path: metrics
+  tags: [team_vs_player]
+  why: "Needs match-level results and excluding the in-progress season."
+
+# ---------------------------------------------------------------- one person across seasons
+- id: q11
+  question: "Which player has scored the most FPL points across all seasons in the data, and how many?"
+  answer_type: entity
+  top: 1
+  require_value: true
+  gold_sql: |
+    select player_code, sum(total_points) as value from marts.fct_player_fixtures
+    group by player_code order by value desc
+  path: metrics
+  tags: [cross_season, unstable_names]
+  why: "Grouping by display name splits Salah into \"Salah\" (1,741) and \"M.Salah\" (467)."
+
+- id: q12
+  question: "How many FPL points has Salah scored across all seasons?"
+  answer_type: number
+  gold_sql: select sum(total_points) as value from marts.fct_player_fixtures where player_code = 118748
+  path: metrics
+  tags: [cross_season, ambiguous_match]
+  why: "A fuzzy match on \"salah\" also matches Salah-Eddine Oulad M'hand, a different player."
+
+- id: q13
+  question: "How many FPL points has Bruno Fernandes scored in total?"
+  answer_type: number
+  gold_sql: select sum(total_points) as value from marts.fct_player_fixtures where player_code = 141746
+  path: metrics
+  tags: [cross_season, name_mismatch, unstable_names]
+  why: "Full name differs from the common name, and web_name changed from \"Fernandes\" to \"B.Fernandes\"."
+
+- id: q14
+  question: "In how many seasons has Virgil van Dijk played at least one minute?"
+  answer_type: number
+  gold_sql: |
+    select count(distinct season) as value from marts.fct_player_fixtures
+    where player_code = 97032 and minutes_played > 0
+  path: sql
+  tags: [cross_season, unstable_names]
+  why: "web_name varies (\"Virgil\", \"van Dijk\", \"Van Dijk\"); counting seasons he was merely listed is also wrong."
+
+- id: q15
+  question: "Who are the top 5 goalscorers across all seasons in the data?"
+  answer_type: ranking
+  top: 5
+  gold_sql: |
+    select player_code, sum(goals) as value from marts.fct_player_fixtures
+    group by player_code order by value desc
+  path: metrics
+  tags: [cross_season, unstable_names]
+  why: "Needs the stable player key across seasons."
+
+- id: q16
+  question: "Which player has played for the most different Premier League clubs in this data (at least one minute for each)?"
+  answer_type: set
+  gold_sql: |
+    with clubs as (
+      select player_code, count(distinct team_name) as value from marts.fct_player_fixtures
+      where minutes_played > 0 group by player_code)
+    select player_code, value from clubs where value = (select max(value) from clubs)
+  path: sql
+  tags: [cross_season, transfers, ties]
+  why: "No metric covers it; needs per-fixture clubs and may have ties."
+
+- id: q17
+  question: "In which season did Mohamed Salah score the most FPL points?"
+  answer_type: text
+  gold_sql: |
+    select season as value from marts.fct_player_fixtures where player_code = 118748
+    group by season order by sum(total_points) desc limit 1
+  path: metrics
+  tags: [cross_season]
+  why: "Simple once the player is resolved."
+
+# ---------------------------------------------------------------- name resolution
+- id: q18
+  question: "How many FPL points has Pascal Gross scored in total?"
+  answer_type: number
+  gold_sql: select sum(total_points) as value from marts.fct_player_fixtures where player_code = 60307
+  path: metrics
+  tags: [name_mismatch]
+  why: "The data spells it \"Groß\"; ilike '%gross%' doesn't match \"ß\"."
+
+- id: q19
+  question: "How many FPL points did Son score in 2021-22?"
+  answer_type: number
+  gold_sql: select sum(total_points) as value from marts.fct_player_fixtures where player_code = 85971 and season = '2021-22'
+  path: metrics
+  tags: [name_mismatch]
+  why: "The text \"son\" is inside many names (Wilson, Robertson, ...); needs Son Heung-min specifically."
+
+- id: q20
+  question: "How many FPL points has Aaron Ramsey scored in this data?"
+  answer_type: table
+  gold_sql: |
+    select p.player_name || ' (' || string_agg(distinct f.team_name, '/' order by f.team_name) || ')' as key, sum(f.total_points) as value
+    from marts.fct_player_fixtures f join marts.dim_players p using (player_code)
+    where f.player_code in (41792, 447715) group by p.player_code, p.player_name order by key
+  path: metrics
+  tags: [ambiguous_person]
+  why: "Two different Aaron Ramseys (ex-Arsenal; Burnley/Villa). Summing them gives 295; correct = report both separately."
+
+- id: q21
+  question: "How many FPL points has Danny Ward scored in total?"
+  answer_type: table
+  gold_sql: |
+    select p.player_name || ' (' || string_agg(distinct f.team_name, '/' order by f.team_name) || ')' as key, sum(f.total_points) as value
+    from marts.fct_player_fixtures f join marts.dim_players p using (player_code)
+    where f.player_code in (95463, 75826) group by p.player_code, p.player_name order by key
+  path: metrics
+  tags: [ambiguous_person]
+  why: "Two different Danny Wards (goalkeeper; forward). Summing them is wrong."
+
+- id: q22
+  question: "How many league goals did Manchester United score in 2020-21?"
+  answer_type: number
+  gold_sql: |
+    select sum(case when h.team_name = 'Man Utd' then home_goals else away_goals end) as value
+    from marts.fct_fixtures x
+    join marts.dim_teams h on h.team_code = x.home_team_code
+    join marts.dim_teams a on a.team_code = x.away_team_code
+    where season = '2020-21' and 'Man Utd' in (h.team_name, a.team_name)
+  path: sql
+  tags: [name_mismatch, own_goals, team_vs_player]
+  why: "The club is \"Man Utd\" in the data, and team goals include opponents' own goals."
+
+- id: q23
+  question: "How many FPL points did Matheus Cunha score in 2024-25?"
+  answer_type: number
+  gold_sql: select sum(total_points) as value from marts.fct_player_fixtures where player_code = 430871 and season = '2024-25'
+  path: metrics
+  tags: [name_mismatch]
+  why: "Full name is \"Matheus Santos Carneiro da Cunha\"."
+
+- id: q24
+  question: "How many goals did Luis Diaz score in 2024-25?"
+  answer_type: number
+  gold_sql: select sum(goals) as value from marts.fct_player_fixtures where player_code = 244731 and season = '2024-25'
+  path: metrics
+  tags: [name_mismatch]
+  why: "Accent (\"Díaz\") plus a longer full name (\"Luis Díaz Marulanda\")."
+
+# ---------------------------------------------------------------- grain: gameweeks vs matches
+- id: q25
+  question: "How many FPL points did Salah score in gameweek 24 of 2024-25?"
+  answer_type: number
+  gold_sql: |
+    select sum(total_points) as value from marts.fct_player_fixtures
+    where player_code = 118748 and season = '2024-25' and gameweek = 24
+  path: metrics
+  tags: [double_gameweek, grain]
+  why: "Double gameweek. Two matches, so taking one row gives half the answer."
+
+- id: q26
+  question: "Who scored the most FPL points in a single gameweek in 2021-22, and how many?"
+  answer_type: entity
+  top: 1
+  require_value: true
+  gold_sql: |
+    select player_code, sum(total_points) as value from marts.fct_player_fixtures
+    where season = '2021-22' group by player_code, gameweek order by value desc
+  path: metrics
+  tags: [double_gameweek, grain]
+  why: "A gameweek total sums over fixtures; the best single match is a different answer."
+
+- id: q27
+  question: "What is the most FPL points any player scored in a single match in this data?"
+  answer_type: number
+  gold_sql: select max(total_points) as value from marts.fct_player_fixtures
+  path: sql
+  tags: [grain]
+  why: "Per-match maximum, not per-gameweek."
+
+- id: q28
+  question: "Which gameweek of 2022-23 had no matches played?"
+  answer_type: number
+  gold_sql: |
+    select g as value from range(1, 39) t(g)
+    where g not in (select gameweek from marts.fct_fixtures where season = '2022-23')
+  path: sql
+  tags: [blank_gameweek]
+  why: "GW7 was postponed (the Queen's death). Must reason about what's missing."
+
+- id: q29
+  question: "Which gameweek of 2023-24 had the most goals scored?"
+  answer_type: number
+  gold_sql: |
+    select gameweek as value from marts.fct_fixtures where season = '2023-24'
+    group by gameweek order by sum(home_goals + away_goals) desc limit 1
+  path: metrics
+  tags: [double_gameweek, team_vs_player]
+  why: "GW34 had 13 matches (a double gameweek), so it's not a like-for-like week."
+
+# ---------------------------------------------------------------- team-level vs player-level
+- id: q30
+  question: "How many league goals did Arsenal score in 2023-24?"
+  answer_type: number
+  gold_sql: |
+    select sum(case when h.team_name = 'Arsenal' then home_goals else away_goals end) as value
+    from marts.fct_fixtures x
+    join marts.dim_teams h on h.team_code = x.home_team_code
+    join marts.dim_teams a on a.team_code = x.away_team_code
+    where season = '2023-24' and 'Arsenal' in (h.team_name, a.team_name)
+  path: sql
+  tags: [own_goals, team_vs_player]
+  why: "Their players scored 85; the club scored 91 (6 opponent own goals)."
+
+- id: q31
+  question: "Which club conceded the fewest league goals in 2024-25, and how many?"
+  answer_type: entity
+  top: 1
+  require_value: true
+  gold_sql: |
+    select t.team_name, sum(case when x.home_team_code = t.team_code then away_goals else home_goals end) as value
+    from marts.fct_fixtures x join marts.dim_teams t on t.team_code in (x.home_team_code, x.away_team_code)
+    where season = '2024-25' group by t.team_name order by value asc
+  path: sql
+  tags: [team_vs_player]
+  why: "Summing players' goals_conceded counts each goal once per player on the pitch (Arsenal: 374 vs 34)."
+
+- id: q32
+  question: "What was Liverpool's goal difference in 2019-20?"
+  answer_type: number
+  gold_sql: |
+    select sum(case when h.team_name = 'Liverpool' then home_goals - away_goals else away_goals - home_goals end) as value
+    from marts.fct_fixtures x
+    join marts.dim_teams h on h.team_code = x.home_team_code
+    join marts.dim_teams a on a.team_code = x.away_team_code
+    where season = '2019-20' and 'Liverpool' in (h.team_name, a.team_name)
+  path: sql
+  tags: [team_vs_player]
+  why: "Match-level, both home and away."
+
+- id: q33
+  question: "How many league matches did Manchester City win in 2017-18?"
+  answer_type: number
+  gold_sql: |
+    select count(*) as value
+    from marts.fct_fixtures x
+    join marts.dim_teams h on h.team_code = x.home_team_code
+    join marts.dim_teams a on a.team_code = x.away_team_code
+    where season = '2017-18' and ((h.team_name = 'Man City' and home_goals > away_goals) or (a.team_name = 'Man City' and away_goals > home_goals))
+  path: sql
+  tags: [team_vs_player, name_mismatch, grain]
+  why: "Counting player rows with result = 'W' counts each win ~14 times."
+
+- id: q34
+  question: "How many clean sheets did Liverpool keep as a team in 2018-19?"
+  answer_type: number
+  gold_sql: |
+    select count(*) as value
+    from marts.fct_fixtures x
+    join marts.dim_teams h on h.team_code = x.home_team_code
+    join marts.dim_teams a on a.team_code = x.away_team_code
+    where season = '2018-19' and ((h.team_name = 'Liverpool' and away_goals = 0) or (a.team_name = 'Liverpool' and home_goals = 0))
+  path: sql
+  tags: [team_vs_player]
+  why: "The clean_sheets metric is per player (needs 60+ minutes); summing it multiplies the answer."
+
+# ---------------------------------------------------------------- transfers: club per match
+- id: q35
+  question: "How many FPL points did Virgil van Dijk score for Liverpool in 2017-18?"
+  answer_type: number
+  gold_sql: |
+    select sum(total_points) as value from marts.fct_player_fixtures
+    where player_code = 97032 and season = '2017-18' and team_name = 'Liverpool'
+  path: metrics
+  tags: [transfers]
+  why: "He joined in January; the season snapshot lists him at Liverpool for the whole season (78 pts vs 53)."
+
+- id: q36
+  question: "How many FPL points did Cole Palmer score for Chelsea in 2023-24?"
+  answer_type: number
+  gold_sql: |
+    select sum(total_points) as value from marts.fct_player_fixtures
+    where player_code = 244851 and season = '2023-24' and team_name = 'Chelsea'
+  path: metrics
+  tags: [transfers]
+  why: "1 point came at Man City before his move."
+
+- id: q37
+  question: "How many FPL points did Antoine Semenyo score for Manchester City in 2025-26?"
+  answer_type: number
+  gold_sql: |
+    select sum(total_points) as value from marts.fct_player_fixtures
+    where player_code = 437730 and season = '2025-26' and team_name = 'Man City'
+  path: metrics
+  tags: [transfers, name_mismatch]
+  why: "Mid-season move (120 at Bournemouth first), and the club is \"Man City\" in the data."
+
+- id: q38
+  question: "How many goals did Brennan Johnson score for Spurs in 2023-24?"
+  answer_type: number
+  gold_sql: |
+    select sum(goals) as value from marts.fct_player_fixtures
+    where player_code = 242898 and season = '2023-24' and team_name = 'Spurs'
+  path: metrics
+  tags: [transfers]
+  why: "Started the season at Nott'm Forest."
+
+# ---------------------------------------------------------------- managers listed as players (2024-25)
+- id: q39
+  question: "Who were Everton's top three FPL point scorers among players in 2024-25?"
+  answer_type: ranking
+  top: 3
+  gold_sql: |
+    select player_code, sum(total_points) as value from marts.fct_player_fixtures
+    where season = '2024-25' and team_name = 'Everton' and position <> 'MGR'
+    group by player_code order by value desc
+  path: metrics
+  tags: [managers]
+  why: "Manager David Moyes (137 pts via the assistant-manager chip) would rank 2nd if not excluded."
+
+- id: q40
+  question: "How many FPL points did all players combined score in 2024-25?"
+  answer_type: number
+  gold_sql: |
+    select sum(total_points) as value from marts.fct_player_fixtures
+    where season = '2024-25' and position <> 'MGR'
+  path: metrics
+  tags: [managers]
+  why: "Including the 20 managers adds 1,861 points (33,151 vs 31,290)."
+
+# ---------------------------------------------------------------- rates and minimum samples
+- id: q41
+  question: "Who had the best FPL points per 90 minutes in 2024-25?"
+  answer_type: entity
+  top: 1
+  gold_sql: |
+    select player_code, sum(total_points) * 90.0 / sum(minutes_played) as value from marts.fct_player_fixtures
+    where season = '2024-25' group by player_code having sum(minutes_played) >= 900 order by value desc
+  path: metrics
+  tags: [small_sample]
+  why: "No minimum: 1-minute players score 90.0 per 90. Any minimum of 450+ minutes (5 full matches) gives Salah; below that, short stints like Danny Ings (270 min) win."
+
+- id: q42
+  question: "Among players with at least 2,000 minutes in 2024-25, who were the top 3 by FPL points per 90 minutes?"
+  answer_type: ranking
+  top: 3
+  tolerance: 0.01
+  gold_sql: |
+    select player_code, sum(total_points) * 90.0 / sum(minutes_played) as value from marts.fct_player_fixtures
+    where season = '2024-25' group by player_code having sum(minutes_played) >= 2000 order by value desc
+  path: metrics
+  tags: [small_sample, precision]
+  why: "2nd and 3rd are 6.885 vs 6.883; rounding too early swaps them."
+
+- id: q43
+  question: "Across all seasons, does Mohamed Salah average more FPL points per appearance at home or away? Give both numbers."
+  answer_type: table
+  tolerance: 0.01
+  gold_sql: |
+    select case when was_home then 'home' else 'away' end as key,
+           sum(total_points) * 1.0 / count(*) filter (where minutes_played > 0) as value
+    from marts.fct_player_fixtures where player_code = 118748 group by was_home order by key
+  path: metrics
+  tags: [cross_season, rate_definition]
+  why: "Appearances = matches with 1+ minute, not every listed fixture."
+
+- id: q44
+  question: "Which defender had the most FPL points per appearance in 2023-24, with at least 20 appearances?"
+  answer_type: entity
+  top: 1
+  tolerance: 0.01
+  gold_sql: |
+    select player_code, sum(total_points) * 1.0 / count(*) filter (where minutes_played > 0) as value
+    from marts.fct_player_fixtures where season = '2023-24' and position = 'DEF'
+    group by player_code having count(*) filter (where minutes_played > 0) >= 20 order by value desc
+  path: metrics
+  tags: [small_sample]
+  why: "Needs both a position filter and an appearance threshold."
+
+# ---------------------------------------------------------------- data that isn't there
+- id: q45
+  question: "What was Harry Kane's total xG in the 2020-21 season?"
+  answer_type: unavailable
+  gold_sql: select sum(xg) as value from marts.fct_player_fixtures where player_code = 78830 and season = '2020-21'
+  path: metrics
+  tags: [missing_data]
+  why: "xG is only recorded from 2022-23. Correct = say it's not available (NULL), not 0 or a remembered figure."
+
+- id: q46
+  question: "Which player most outperformed their xG (goals minus xG) in 2023-24?"
+  answer_type: entity
+  top: 1
+  tolerance: 0.01
+  gold_sql: |
+    select player_code, sum(goals) - sum(xg) as value from marts.fct_player_fixtures
+    where season = '2023-24' group by player_code order by value desc
+  path: metrics
+  tags: [missing_data]
+  why: "Derived metric; only valid where xG exists."
+
+- id: q47
+  question: "How many FPL points did Harry Kane score in 2023-24?"
+  answer_type: number
+  gold_sql: select sum(total_points) as value from marts.fct_player_fixtures where player_code = 78830 and season = '2023-24'
+  path: metrics
+  tags: [knowledge_vs_data]
+  why: "He left for Bayern before playing; the answer is 0, whatever the model remembers."
+
+# ---------------------------------------------------------------- ties and extremes
+- id: q48
+  question: "Which goalkeeper kept the most clean sheets in 2024-25?"
+  answer_type: set
+  gold_sql: |
+    with cs as (
+      select player_code, sum(clean_sheets) as value from marts.fct_player_fixtures
+      where season = '2024-25' and position = 'GKP' group by player_code)
+    select player_code, value from cs where value = (select max(value) from cs)
+  path: metrics
+  tags: [ties]
+  why: "Raya and Sels are tied on 13. Naming only one is half right."
+
+- id: q49
+  question: "What is the biggest winning margin in any match in this data, and how many matches ended with that margin?"
+  answer_type: table
+  gold_sql: |
+    with m as (select abs(home_goals - away_goals) as margin from marts.fct_fixtures)
+    select 'margin' as key, max(margin) as value from m
+    union all
+    select 'matches', count(*) from m where margin = (select max(margin) from m)
+  path: sql
+  tags: [ties]
+  why: "Three 9-0s (Leicester at Southampton, Liverpool v Bournemouth, Man Utd v Southampton)."
+
+# ---------------------------------------------------------------- time
+- id: q50
+  question: "In which calendar month of the 2023-24 season did Arsenal players score the most FPL points? Answer as YYYY-MM."
+  answer_type: text
+  gold_sql: |
+    select strftime(kickoff_date, '%Y-%m') as value from marts.fct_player_fixtures
+    where season = '2023-24' and team_name = 'Arsenal'
+    group by 1 order by sum(total_points) desc limit 1
+  path: metrics
+  tags: [time_grain]
+  why: "Calendar month, not gameweek or season."
+
+# Tags
+#   warmup            should be easy everywhere; catches harness problems
+#   cross_season      one person across seasons; per-season ids and display names change
+#   unstable_names    display name changes (Salah -> M.Salah)
+#   name_mismatch     the user's name for it differs from the data's (Groß, Man Utd, full names)
+#   ambiguous_match   a fuzzy match also hits someone else
+#   ambiguous_person  two different people with the same name
+#   grain             rows aren't the unit asked about (player x match vs match vs gameweek)
+#   double_gameweek   a gameweek with two matches for a team
+#   blank_gameweek    a gameweek with no matches
+#   team_vs_player    team facts must come from matches, not by summing players
+#   own_goals         team goals include opponents' own goals
+#   transfers         club per match, not end-of-season club
+#   managers          2024-25 lists 20 managers as FPL "players"
+#   small_sample      rate rankings need a minimum sample
+#   rate_definition   what counts as an appearance
+#   precision         close values; early rounding changes the order
+#   missing_data      not recorded for some seasons (NULL, not 0)
+#   knowledge_vs_data the model's memory disagrees with this data
+#   ties              more than one right answer at the top
+#   time_grain        calendar time buckets

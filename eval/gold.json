@@ -1,0 +1,827 @@
+{
+ "warehouse": "examples/fpl (vaastav d7b05b5)",
+ "questions": [
+  {
+   "id": "q01",
+   "question": "How many FPL points did Mohamed Salah score in the 2024-25 season?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "warmup"
+   ],
+   "answer": 344
+  },
+  {
+   "id": "q02",
+   "question": "Who scored the most FPL points in the 2023-24 season?",
+   "answer_type": "entity",
+   "path": "metrics",
+   "tags": [
+    "warmup"
+   ],
+   "top": 1,
+   "answer": [
+    {
+     "player_code": 244851,
+     "name": "Cole Palmer",
+     "aliases": [
+      "cole palmer",
+      "palmer"
+     ],
+     "value": 244
+    }
+   ]
+  },
+  {
+   "id": "q03",
+   "question": "How many goals were scored in total in the 2023-24 Premier League season?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "own_goals",
+    "team_vs_player"
+   ],
+   "answer": 1246
+  },
+  {
+   "id": "q04",
+   "question": "What was the average number of goals per match in 2018-19?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "team_vs_player"
+   ],
+   "tolerance": 0.01,
+   "answer": 2.821053
+  },
+  {
+   "id": "q05",
+   "question": "How many matches of the 2026-27 season are in the data so far?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "warmup",
+    "grain"
+   ],
+   "answer": 60
+  },
+  {
+   "id": "q06",
+   "question": "Which club's players scored the most combined FPL points in 2025-26?",
+   "answer_type": "entity",
+   "path": "metrics",
+   "tags": [
+    "warmup"
+   ],
+   "top": 1,
+   "answer": [
+    {
+     "name": "Arsenal",
+     "aliases": [
+      "arsenal"
+     ],
+     "value": 2161
+    }
+   ]
+  },
+  {
+   "id": "q07",
+   "question": "How many FPL assists did Kevin De Bruyne record in 2019-20?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "warmup",
+    "knowledge_vs_data"
+   ],
+   "answer": 23
+  },
+  {
+   "id": "q08",
+   "question": "Who were the top 5 goalscorers in 2022-23?",
+   "answer_type": "ranking",
+   "path": "metrics",
+   "tags": [
+    "warmup"
+   ],
+   "top": 5,
+   "answer": [
+    {
+     "player_code": 223094,
+     "name": "Erling Haaland",
+     "aliases": [
+      "erling haaland",
+      "haaland"
+     ],
+     "value": 36
+    },
+    {
+     "player_code": 78830,
+     "name": "Harry Kane",
+     "aliases": [
+      "harry kane",
+      "kane"
+     ],
+     "value": 30
+    },
+    {
+     "player_code": 144485,
+     "name": "Ivan Toney",
+     "aliases": [
+      "ivan toney",
+      "toney"
+     ],
+     "value": 20
+    },
+    {
+     "player_code": 118748,
+     "name": "Mohamed Salah",
+     "aliases": [
+      "m.salah",
+      "mohamed salah",
+      "salah"
+     ],
+     "value": 19
+    },
+    {
+     "player_code": 75115,
+     "name": "Callum Wilson",
+     "aliases": [
+      "callum wilson",
+      "wilson"
+     ],
+     "value": 18
+    }
+   ]
+  },
+  {
+   "id": "q09",
+   "question": "How many yellow cards has Bruno Fernandes received across all seasons in the data?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "name_mismatch",
+    "cross_season"
+   ],
+   "answer": 42
+  },
+  {
+   "id": "q10",
+   "question": "Which completed season had the highest home win rate?",
+   "answer_type": "text",
+   "path": "metrics",
+   "tags": [
+    "team_vs_player"
+   ],
+   "answer": "2016-17"
+  },
+  {
+   "id": "q11",
+   "question": "Which player has scored the most FPL points across all seasons in the data, and how many?",
+   "answer_type": "entity",
+   "path": "metrics",
+   "tags": [
+    "cross_season",
+    "unstable_names"
+   ],
+   "top": 1,
+   "require_value": true,
+   "answer": [
+    {
+     "player_code": 118748,
+     "name": "Mohamed Salah",
+     "aliases": [
+      "m.salah",
+      "mohamed salah",
+      "salah"
+     ],
+     "value": 2208
+    }
+   ]
+  },
+  {
+   "id": "q12",
+   "question": "How many FPL points has Salah scored across all seasons?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "cross_season",
+    "ambiguous_match"
+   ],
+   "answer": 2208
+  },
+  {
+   "id": "q13",
+   "question": "How many FPL points has Bruno Fernandes scored in total?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "cross_season",
+    "name_mismatch",
+    "unstable_names"
+   ],
+   "answer": 1295
+  },
+  {
+   "id": "q14",
+   "question": "In how many seasons has Virgil van Dijk played at least one minute?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "cross_season",
+    "unstable_names"
+   ],
+   "answer": 11
+  },
+  {
+   "id": "q15",
+   "question": "Who are the top 5 goalscorers across all seasons in the data?",
+   "answer_type": "ranking",
+   "path": "metrics",
+   "tags": [
+    "cross_season",
+    "unstable_names"
+   ],
+   "top": 5,
+   "answer": [
+    {
+     "player_code": 118748,
+     "name": "Mohamed Salah",
+     "aliases": [
+      "m.salah",
+      "mohamed salah",
+      "salah"
+     ],
+     "value": 191
+    },
+    {
+     "player_code": 78830,
+     "name": "Harry Kane",
+     "aliases": [
+      "harry kane",
+      "kane"
+     ],
+     "value": 163
+    },
+    {
+     "player_code": 85971,
+     "name": "Son Heung-min",
+     "aliases": [
+      "son",
+      "son heung-min"
+     ],
+     "value": 123
+    },
+    {
+     "player_code": 223094,
+     "name": "Erling Haaland",
+     "aliases": [
+      "erling haaland",
+      "haaland"
+     ],
+     "value": 118
+    },
+    {
+     "player_code": 101668,
+     "name": "Jamie Vardy",
+     "aliases": [
+      "jamie vardy",
+      "vardy"
+     ],
+     "value": 116
+    }
+   ]
+  },
+  {
+   "id": "q16",
+   "question": "Which player has played for the most different Premier League clubs in this data (at least one minute for each)?",
+   "answer_type": "set",
+   "path": "sql",
+   "tags": [
+    "cross_season",
+    "transfers",
+    "ties"
+   ],
+   "answer": [
+    {
+     "player_code": 225321,
+     "name": "Aaron Ramsdale",
+     "aliases": [
+      "aaron ramsdale",
+      "ramsdale"
+     ],
+     "value": 5
+    },
+    {
+     "player_code": 440323,
+     "name": "Armando Broja",
+     "aliases": [
+      "armando broja",
+      "broja"
+     ],
+     "value": 5
+    }
+   ]
+  },
+  {
+   "id": "q17",
+   "question": "In which season did Mohamed Salah score the most FPL points?",
+   "answer_type": "text",
+   "path": "metrics",
+   "tags": [
+    "cross_season"
+   ],
+   "answer": "2024-25"
+  },
+  {
+   "id": "q18",
+   "question": "How many FPL points has Pascal Gross scored in total?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "name_mismatch"
+   ],
+   "answer": 967
+  },
+  {
+   "id": "q19",
+   "question": "How many FPL points did Son score in 2021-22?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "name_mismatch"
+   ],
+   "answer": 258
+  },
+  {
+   "id": "q20",
+   "question": "How many FPL points has Aaron Ramsey scored in this data?",
+   "answer_type": "table",
+   "path": "metrics",
+   "tags": [
+    "ambiguous_person"
+   ],
+   "answer": {
+    "Aaron Ramsey (Arsenal)": 277,
+    "Aaron Ramsey (Aston Villa/Burnley)": 18
+   }
+  },
+  {
+   "id": "q21",
+   "question": "How many FPL points has Danny Ward scored in total?",
+   "answer_type": "table",
+   "path": "metrics",
+   "tags": [
+    "ambiguous_person"
+   ],
+   "answer": {
+    "Danny Ward (Cardiff)": 22,
+    "Danny Ward (Leicester/Liverpool)": 96
+   }
+  },
+  {
+   "id": "q22",
+   "question": "How many league goals did Manchester United score in 2020-21?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "name_mismatch",
+    "own_goals",
+    "team_vs_player"
+   ],
+   "answer": 73
+  },
+  {
+   "id": "q23",
+   "question": "How many FPL points did Matheus Cunha score in 2024-25?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "name_mismatch"
+   ],
+   "answer": 178
+  },
+  {
+   "id": "q24",
+   "question": "How many goals did Luis Diaz score in 2024-25?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "name_mismatch"
+   ],
+   "answer": 13
+  },
+  {
+   "id": "q25",
+   "question": "How many FPL points did Salah score in gameweek 24 of 2024-25?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "double_gameweek",
+    "grain"
+   ],
+   "answer": 29
+  },
+  {
+   "id": "q26",
+   "question": "Who scored the most FPL points in a single gameweek in 2021-22, and how many?",
+   "answer_type": "entity",
+   "path": "metrics",
+   "tags": [
+    "double_gameweek",
+    "grain"
+   ],
+   "top": 1,
+   "require_value": true,
+   "answer": [
+    {
+     "player_code": 61366,
+     "name": "Kevin De Bruyne",
+     "aliases": [
+      "de bruyne",
+      "kevin de bruyne"
+     ],
+     "value": 30
+    }
+   ]
+  },
+  {
+   "id": "q27",
+   "question": "What is the most FPL points any player scored in a single match in this data?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "grain"
+   ],
+   "answer": 29
+  },
+  {
+   "id": "q28",
+   "question": "Which gameweek of 2022-23 had no matches played?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "blank_gameweek"
+   ],
+   "answer": 7
+  },
+  {
+   "id": "q29",
+   "question": "Which gameweek of 2023-24 had the most goals scored?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "double_gameweek",
+    "team_vs_player"
+   ],
+   "answer": 34
+  },
+  {
+   "id": "q30",
+   "question": "How many league goals did Arsenal score in 2023-24?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "own_goals",
+    "team_vs_player"
+   ],
+   "answer": 91
+  },
+  {
+   "id": "q31",
+   "question": "Which club conceded the fewest league goals in 2024-25, and how many?",
+   "answer_type": "entity",
+   "path": "sql",
+   "tags": [
+    "team_vs_player"
+   ],
+   "top": 1,
+   "require_value": true,
+   "answer": [
+    {
+     "name": "Arsenal",
+     "aliases": [
+      "arsenal"
+     ],
+     "value": 34
+    }
+   ]
+  },
+  {
+   "id": "q32",
+   "question": "What was Liverpool's goal difference in 2019-20?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "team_vs_player"
+   ],
+   "answer": 52
+  },
+  {
+   "id": "q33",
+   "question": "How many league matches did Manchester City win in 2017-18?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "team_vs_player",
+    "name_mismatch",
+    "grain"
+   ],
+   "answer": 32
+  },
+  {
+   "id": "q34",
+   "question": "How many clean sheets did Liverpool keep as a team in 2018-19?",
+   "answer_type": "number",
+   "path": "sql",
+   "tags": [
+    "team_vs_player"
+   ],
+   "answer": 21
+  },
+  {
+   "id": "q35",
+   "question": "How many FPL points did Virgil van Dijk score for Liverpool in 2017-18?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "transfers"
+   ],
+   "answer": 53
+  },
+  {
+   "id": "q36",
+   "question": "How many FPL points did Cole Palmer score for Chelsea in 2023-24?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "transfers"
+   ],
+   "answer": 243
+  },
+  {
+   "id": "q37",
+   "question": "How many FPL points did Antoine Semenyo score for Manchester City in 2025-26?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "transfers",
+    "name_mismatch"
+   ],
+   "answer": 82
+  },
+  {
+   "id": "q38",
+   "question": "How many goals did Brennan Johnson score for Spurs in 2023-24?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "transfers"
+   ],
+   "answer": 5
+  },
+  {
+   "id": "q39",
+   "question": "Who were Everton's top three FPL point scorers among players in 2024-25?",
+   "answer_type": "ranking",
+   "path": "metrics",
+   "tags": [
+    "managers"
+   ],
+   "top": 3,
+   "answer": [
+    {
+     "player_code": 111234,
+     "name": "Jordan Pickford",
+     "aliases": [
+      "jordan pickford",
+      "pickford"
+     ],
+     "value": 158
+    },
+    {
+     "player_code": 224967,
+     "name": "Vitalii Mykolenko",
+     "aliases": [
+      "mykolenko",
+      "vitalii mykolenko"
+     ],
+     "value": 121
+    },
+    {
+     "player_code": 440993,
+     "name": "Iliman Ndiaye",
+     "aliases": [
+      "iliman ndiaye",
+      "ndiaye"
+     ],
+     "value": 114
+    }
+   ]
+  },
+  {
+   "id": "q40",
+   "question": "How many FPL points did all players combined score in 2024-25?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "managers"
+   ],
+   "answer": 31290
+  },
+  {
+   "id": "q41",
+   "question": "Who had the best FPL points per 90 minutes in 2024-25?",
+   "answer_type": "entity",
+   "path": "metrics",
+   "tags": [
+    "small_sample"
+   ],
+   "top": 1,
+   "answer": [
+    {
+     "player_code": 118748,
+     "name": "Mohamed Salah",
+     "aliases": [
+      "m.salah",
+      "mohamed salah",
+      "salah"
+     ],
+     "value": 9.176052
+    }
+   ]
+  },
+  {
+   "id": "q42",
+   "question": "Among players with at least 2,000 minutes in 2024-25, who were the top 3 by FPL points per 90 minutes?",
+   "answer_type": "ranking",
+   "path": "metrics",
+   "tags": [
+    "small_sample",
+    "precision"
+   ],
+   "tolerance": 0.01,
+   "top": 3,
+   "answer": [
+    {
+     "player_code": 118748,
+     "name": "Mohamed Salah",
+     "aliases": [
+      "m.salah",
+      "mohamed salah",
+      "salah"
+     ],
+     "value": 9.176052
+    },
+    {
+     "player_code": 219168,
+     "name": "Alexander Isak",
+     "aliases": [
+      "alexander isak",
+      "isak"
+     ],
+     "value": 6.885424
+    },
+    {
+     "player_code": 244731,
+     "name": "Luis Díaz Marulanda",
+     "aliases": [
+      "luis diaz",
+      "luis diaz marulanda"
+     ],
+     "value": 6.882574
+    }
+   ]
+  },
+  {
+   "id": "q43",
+   "question": "Across all seasons, does Mohamed Salah average more FPL points per appearance at home or away? Give both numbers.",
+   "answer_type": "table",
+   "path": "metrics",
+   "tags": [
+    "cross_season",
+    "rate_definition"
+   ],
+   "tolerance": 0.01,
+   "answer": {
+    "away": 6.577922,
+    "home": 7.42236
+   }
+  },
+  {
+   "id": "q44",
+   "question": "Which defender had the most FPL points per appearance in 2023-24, with at least 20 appearances?",
+   "answer_type": "entity",
+   "path": "metrics",
+   "tags": [
+    "small_sample"
+   ],
+   "tolerance": 0.01,
+   "top": 1,
+   "answer": [
+    {
+     "player_code": 198869,
+     "name": "Benjamin White",
+     "aliases": [
+      "benjamin white",
+      "white"
+     ],
+     "value": 4.918919
+    }
+   ]
+  },
+  {
+   "id": "q45",
+   "question": "What was Harry Kane's total xG in the 2020-21 season?",
+   "answer_type": "unavailable",
+   "path": "metrics",
+   "tags": [
+    "missing_data"
+   ],
+   "answer": null
+  },
+  {
+   "id": "q46",
+   "question": "Which player most outperformed their xG (goals minus xG) in 2023-24?",
+   "answer_type": "entity",
+   "path": "metrics",
+   "tags": [
+    "missing_data"
+   ],
+   "tolerance": 0.01,
+   "top": 1,
+   "answer": [
+    {
+     "player_code": 209244,
+     "name": "Phil Foden",
+     "aliases": [
+      "foden",
+      "phil foden"
+     ],
+     "value": 8.83
+    }
+   ]
+  },
+  {
+   "id": "q47",
+   "question": "How many FPL points did Harry Kane score in 2023-24?",
+   "answer_type": "number",
+   "path": "metrics",
+   "tags": [
+    "knowledge_vs_data"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "q48",
+   "question": "Which goalkeeper kept the most clean sheets in 2024-25?",
+   "answer_type": "set",
+   "path": "metrics",
+   "tags": [
+    "ties"
+   ],
+   "answer": [
+    {
+     "player_code": 154561,
+     "name": "David Raya Martín",
+     "aliases": [
+      "david raya martin",
+      "raya"
+     ],
+     "value": 13
+    },
+    {
+     "player_code": 85633,
+     "name": "Matz Sels",
+     "aliases": [
+      "matz sels",
+      "sels"
+     ],
+     "value": 13
+    }
+   ]
+  },
+  {
+   "id": "q49",
+   "question": "What is the biggest winning margin in any match in this data, and how many matches ended with that margin?",
+   "answer_type": "table",
+   "path": "sql",
+   "tags": [
+    "ties"
+   ],
+   "answer": {
+    "margin": 9,
+    "matches": 3
+   }
+  },
+  {
+   "id": "q50",
+   "question": "In which calendar month of the 2023-24 season did Arsenal players score the most FPL points? Answer as YYYY-MM.",
+   "answer_type": "text",
+   "path": "metrics",
+   "tags": [
+    "time_grain"
+   ],
+   "answer": "2024-04"
+  }
+ ]
+}
