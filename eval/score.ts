@@ -2,18 +2,20 @@
  * Grades an agent's final answer against eval/gold.json. Pure logic, no API calls.
  *
  * Every agent gets the same answer instructions (ANSWER_FORMAT below), with no hint about the
- * expected type, so the format can't leak that, e.g., there are two Danny Wards. The scorer then
+ * expected type. The examples are deliberately meaningless: v1 used FPL-looking examples that turned
+ * out to equal the gold answers of q01, q17 and q43 (a test now guards against that), so the format can't leak that, e.g., there are two Danny Wards. The scorer then
  * accepts any reasonable shape and applies the rules per gold answer type.
  */
 
 export const ANSWER_FORMAT = `End your reply with exactly one line of the form
 ANSWER: <json>
 where <json> is one of:
-- a number, e.g. 344
-- a string, e.g. "2024-25"
+- a number, e.g. 12.5
+- a string, e.g. "some text"
 - null, if the data does not contain the answer
-- a list of {"name": ..., "value": ...} for one or more players or teams (best first when it's a ranking)
-- an object of label -> number for several labelled values, e.g. {"home": 7.4, "away": 6.6}`;
+- a list of {"name": ..., "value": ...} for one or more players or teams (best first when it's a ranking),
+  e.g. [{"name": "First Name", "value": 10}, {"name": "Second Name", "value": 8}]
+- an object of label -> number for several labelled values, e.g. {"label one": 1.25, "label two": 3}`;
 
 export interface GoldItem {
   name: string;

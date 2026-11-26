@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { nameMatches, parseReply, scoreAnswer, type GoldItem, type GoldQuestion } from "../eval/score.js";
+import { ANSWER_FORMAT, nameMatches, parseReply, scoreAnswer, type GoldItem, type GoldQuestion } from "../eval/score.js";
 
 const gold = new Map(
   (JSON.parse(readFileSync("eval/gold.json", "utf8")).questions as GoldQuestion[]).map((q) => [q.id, q]),
@@ -23,6 +23,25 @@ describe("gold self-check", () => {
 
   it.each([...gold.values()].map((q) => [q.id, q] as const))("%s: the gold answer scores as correct", (_, q) => {
     expect(scoreAnswer(q, says(perfect(q)))).toEqual({ correct: true, reason: "ok" });
+  });
+});
+
+describe("answer-format examples", () => {
+  it("never contain a gold answer (v1 leaked q01, q17, q43 this way)", () => {
+    const examples = [...ANSWER_FORMAT.matchAll(/e\.g\. (.+)$/gm)].map((m) => m[1]!);
+    expect(examples.length).toBeGreaterThanOrEqual(4);
+    for (const q of gold.values()) {
+      const values = Array.isArray(q.answer)
+        ? q.answer.flatMap((i) => [i.name, i.value])
+        : q.answer && typeof q.answer === "object"
+          ? Object.entries(q.answer).flat()
+          : [q.answer];
+      for (const v of values) {
+        if (v === null || v === undefined) continue;
+        const shown = typeof v === "number" ? [String(v), String(Math.round(v * 10) / 10), String(Math.round(v * 100) / 100)] : [String(v)];
+        for (const ex of examples) for (const s of shown) expect(ex.includes(s) && s.length > 1 ? `${q.id}: ${s}` : "").toBe("");
+      }
+    }
   });
 });
 
