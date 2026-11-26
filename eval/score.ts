@@ -177,8 +177,12 @@ function grade(g: GoldQuestion, a: Parsed): Score {
       const got = itemsOf(a);
       if (g.tags.includes("ambiguous_person")) {
         // Two people share the name: both values must be reported separately (labels are free-form).
+        // An extra entry that is clearly a total (labelled so, or equal to the sum) is allowed as
+        // long as the separate values are there; a lone summed number still fails.
         const values = Object.values(want);
-        const pool = got.map((i) => i.value);
+        const sum = values.reduce<number>((s, v) => s + (v ?? 0), 0);
+        const isTotal = (i: Item) => (i.name !== undefined && /\b(total|combined|sum|together|both)\b/i.test(i.name)) || near(i.value, sum);
+        const pool = (got.length > values.length ? got.filter((i) => !isTotal(i)) : got).map((i) => i.value);
         if (pool.length !== values.length) return wrong(`expected ${values.length} separate people, got ${pool.length} value(s)`);
         for (const v of values) {
           const idx = pool.findIndex((p) => near(p, v));

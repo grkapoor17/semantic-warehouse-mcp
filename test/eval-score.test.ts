@@ -37,6 +37,12 @@ describe("traps score as wrong", () => {
     expect(score("q21", 118).correct).toBe(false);
     expect(score("q21", [{ name: "Danny Ward (GK)", value: 96 }, { name: "Danny Ward (FW)", value: 22 }]).correct).toBe(true);
     expect(score("q21", { "Danny Ward, Leicester": 96, "Danny Ward, Cardiff": 22 }).correct).toBe(true);
+    // Both separately plus a clearly-labelled total is fine (seen in the pilot from Gemini).
+    expect(score("q21", { "Danny Ward (GKP)": 96, "Danny Ward (MID)": 22, combined: 118 }).correct).toBe(true);
+    expect(score("q21", { goalkeeper: 96, midfielder: 22, total: 118 }).correct).toBe(true);
+    // ...but a total can't stand in for one of the people, and extra non-total values still fail.
+    expect(score("q21", { "Danny Ward": 96, total: 118 }).correct).toBe(false);
+    expect(score("q21", { a: 96, b: 22, c: 50 }).correct).toBe(false);
     expect(score("q20", 295).correct).toBe(false);
     expect(score("q20", [{ name: "Aaron Ramsey", value: 277 }]).correct).toBe(false);
   });
