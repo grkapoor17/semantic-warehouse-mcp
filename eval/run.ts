@@ -17,9 +17,12 @@ import { ARMS, openArm, type Arm, type ArmId } from "./harness/arms.js";
 import { PRICES } from "./harness/pricing.js";
 import type { AgentRun, Provider } from "./harness/types.js";
 
-export const MODELS: Record<string, { id: string; provider: "anthropic" | "openai" }> = {
-  opus: { id: "claude-opus-5-5", provider: "anthropic" },
+export const MODELS: Record<string, { id: string; provider: "anthropic" | "openai" | "gemini" }> = {
   haiku: { id: "claude-haiku-5-5", provider: "anthropic" },
+  terra: { id: "gpt-6.1-terra", provider: "openai" },
+  flash: { id: "gemini-3.8-flash", provider: "gemini" },
+  // Available, but not in the default lineup (cost):
+  opus: { id: "claude-opus-5-5", provider: "anthropic" },
   sol: { id: "gpt-6.2-sol", provider: "openai" },
 };
 
@@ -49,7 +52,7 @@ const runKey = (model: string, arm: string, qid: string, repeat: number) => `${m
 async function main() {
   const { values } = parseArgs({
     options: {
-      models: { type: "string", default: "opus,haiku,sol" },
+      models: { type: "string", default: "haiku,terra,flash" },
       arms: { type: "string", default: "A,B,C" },
       questions: { type: "string", default: "all" },
       repeats: { type: "string", default: "1" },
@@ -192,6 +195,10 @@ async function loadProviders(kinds: string[]): Promise<Record<string, Provider>>
     const { OpenAIProvider } = await import("./harness/providers/openai.js");
     out.openai = new OpenAIProvider();
   }
+  if (kinds.includes("gemini")) {
+    const { GeminiProvider } = await import("./harness/providers/gemini.js");
+    out.gemini = new GeminiProvider();
+  }
   return out;
 }
 
@@ -199,7 +206,7 @@ async function loadProviders(kinds: string[]): Promise<Record<string, Provider>>
  * Rough cost estimate with no API calls. The fixed prompt (system + tool definitions) is measured
  * from the real arms (~3.5 characters per token); turns, tool-result size and output per turn are
  * assumptions, given as a low/likely/high range. Anthropic runs assume the repeated prefix is read
- * from cache after the first turn; OpenAI runs are priced as if nothing were cached.
+ * from cache after the first turn; OpenAI and Gemini runs are priced as if nothing were cached.
  */
 export async function estimateCost(jobs: { model: string; arm: ArmId }[]) {
   const fixed: Partial<Record<ArmId, number>> = {};

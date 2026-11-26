@@ -58,6 +58,11 @@ expected type, and ends with `ANSWER: <json>`. Rules:
 
 `npm test` checks that every gold answer grades as correct and that the trap answers grade as wrong.
 
+## Models
+
+Default lineup (chosen for cost): **Claude Haiku 5.5** ($0.10 / $0.50 per 1M tokens), **GPT-6.1 Terra**
+($1 / $5) and **Gemini 3.8 Flash** ($0.75 / $3.75). Opus 5.5 and GPT-6.2 Sol are wired up but not run by default.
+
 ## Running it
 
 ```bash
@@ -66,16 +71,16 @@ npx tsx eval/run.ts --models haiku --arms A,B,C --questions q01,q12,q30 --yes   
 npx tsx eval/report.ts eval/runs/<timestamp>                                    # tables
 ```
 
-Options: `--models opus,haiku,sol`, `--arms A,B,C`, `--questions all|q01,q02`, `--repeats N`,
+Options: `--models haiku,terra,flash` (default; `opus`, `sol` also available), `--arms A,B,C`, `--questions all|q01,q02`, `--repeats N`,
 `--concurrency 4`, `--max-tool-calls 15`, `--max-cost 40` (stops starting new runs past this spend),
 `--out <dir>` (re-running into the same dir resumes: finished runs are skipped). API keys come from `.env`
-(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`; git-ignored). Outputs in `eval/runs/` are git-ignored too.
+(`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`; git-ignored). Outputs in `eval/runs/` are git-ignored too.
 
 ### How a run works
 
 [`harness/arms.ts`](harness/arms.ts) starts a real in-process copy of the MCP server for the arm (one
 per worker, each with its own read-only DuckDB connection). The provider loop
-([`providers/anthropic.ts`](harness/providers/anthropic.ts), [`providers/openai.ts`](harness/providers/openai.ts))
+([`anthropic.ts`](harness/providers/anthropic.ts), [`openai.ts`](harness/providers/openai.ts), [`gemini.ts`](harness/providers/gemini.ts))
 sends the question, executes each tool call against the server, feeds results back, and stops when the
 model answers. After 15 tool calls the model is told to answer and tools are switched off.
 
@@ -86,8 +91,8 @@ Fixed settings, the same across arms:
 | Claude effort | `medium` (pinned) | The default for both Opus 5.5 and Haiku 5.5; pinned so a default change can't move results |
 | Claude thinking | adaptive (always on for these models) | Thinking blocks are passed back unchanged |
 | Refusal fallbacks | off | A fallback would answer with a different model |
-| Prompt caching | on (Claude); automatic (OpenAI) | The tools + system prefix repeats every turn |
-| GPT-6.2 Sol reasoning | model default | As in receipt-bench |
+| Prompt caching | on (Claude); automatic (OpenAI, Gemini) | The tools + system prefix repeats every turn |
+| GPT / Gemini reasoning | model default | As in receipt-bench |
 | Tool budget | 15 calls | Enough for discovery + several queries; stops runaway loops |
 | Rows per query | 200 | The server default |
 

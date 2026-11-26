@@ -1,13 +1,14 @@
 import type { Usage } from "./types.js";
 
 /**
- * USD per 1M tokens. Anthropic rates from the claude-api reference (cached 2026-11-03); OpenAI
- * from receipt-bench's pricing table (checked 2026-11-19). Runs store raw token counts, so cost
+ * USD per 1M tokens. Anthropic rates from the claude-api reference (cached 2026-11-03); OpenAI and
+ * Google from receipt-bench's pricing table (checked 2026-11-19). Gemini 3.8 Flash rises to
+ * $1.50 / $7.50 on 2027-01-01. Runs store raw token counts, so cost
  * can be recomputed if a price turns out wrong.
  *
  * cacheRead / cacheWrite: Anthropic bills cache reads at ~0.1x input and writes at ~1.25x.
- * For GPT-6.2 Sol the cached-input discount isn't in our notes, so cached tokens are priced at
- * the full input rate: a deliberate overestimate.
+ * For the OpenAI and Gemini models the cached-input discount isn't in our notes, so cached tokens
+ * are priced at the full input rate: a deliberate overestimate.
  */
 export interface Price {
   input: number;
@@ -28,6 +29,8 @@ export const PRICES: Record<string, Price> = {
     longPrompt: { aboveTokens: 100_000, input: 0.5, output: 2.5 },
   },
   "gpt-6.2-sol": { input: 2.0, output: 10.0, cacheRead: 2.0, cacheWrite: 2.0 },
+  "gpt-6.1-terra": { input: 1.0, output: 5.0, cacheRead: 1.0, cacheWrite: 1.0 },
+  "gemini-3.8-flash": { input: 0.75, output: 3.75, cacheRead: 0.75, cacheWrite: 0.75 },
 };
 
 /** Cost of one API request. `promptTokens` (all input incl. cache) decides the long-prompt tier. */

@@ -8,7 +8,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { openArm, type Arm } from "../eval/harness/arms.js";
 import { requestCost } from "../eval/harness/pricing.js";
 import { AnthropicProvider } from "../eval/harness/providers/anthropic.js";
+import { GeminiProvider } from "../eval/harness/providers/gemini.js";
 import { OpenAIProvider } from "../eval/harness/providers/openai.js";
+import type { GoogleGenAI } from "@google/genai";
 import { BUDGET_EXHAUSTED } from "../eval/harness/types.js";
 import { summarise } from "../eval/report.js";
 import type { RunResult } from "../eval/run.js";
@@ -165,6 +167,41 @@ describe("OpenAI loop", () => {
     expect(fed.at(-1)).toMatchObject({ type: "function_call_output", call_id: "c1" });
     expect(calls[0]).toMatchObject({ instructions: arms.A!.system, tool_choice: "auto" });
     expect(run.usage).toEqual({ inputTokens: 2500, outputTokens: 200, cacheReadTokens: 1500, cacheWriteTokens: 0 });
+  });
+});
+
+// ------------------------------------------------------------------------------------------------
+// Gemini loop with a fake client
+
+describe("Gemini loop", () => {
+  it("runs function calls, echoes the model turn back unchanged, and bills thinking as output", async () => {
+    const requests: { contents: unknown[]; config: { toolConfig: { functionCallingConfig: { mode: string } } } }[] = [];
+    const modelTurn = { role: "model", parts: [{ functionCall: { id: "f1", name: "query_metrics", args: { metrics: ["orders"] } }, thoughtSignature: "sig" }] };
+    const client = {
+      models: {
+        generateContent: async (params: (typeof requests)[number]) => {
+          requests.push(structuredClone(params));
+          const first = requests.length === 1;
+          const content = first ? modelTurn : { role: "model", parts: [{ text: "thinking...", thought: true }, { text: "ANSWER: 4" }] };
+          return {
+            candidates: [{ content, finishReason: "STOP" }],
+            functionCalls: first ? [modelTurn.parts[0]!.functionCall] : undefined,
+            usageMetadata: { promptTokenCount: 1200, candidatesTokenCount: 50, thoughtsTokenCount: 150, cachedContentTokenCount: first ? 0 : 1000 },
+          };
+        },
+      },
+    } as unknown as GoogleGenAI;
+
+    const run = await new GeminiProvider(client).run({
+      model: "gemini-3.8-flash", system: arms.B!.system, question: "How many orders?", tools: arms.B!.tools, callTool: arms.B!.callTool, maxToolCalls: 15,
+    });
+    expect(run).toMatchObject({ stopReason: "end_turn", finalText: "ANSWER: 4", turns: 2 }); // thought text excluded
+    expect(run.toolCalls[0]!.preview).toContain('"orders": 4');
+    const second = requests[1]!.contents as { role: string; parts: Record<string, unknown>[] }[];
+    expect(second[1]).toEqual(modelTurn); // thought signature kept
+    expect(second[2]!.parts[0]).toMatchObject({ functionResponse: { id: "f1", name: "query_metrics" } });
+    expect(requests[0]!.config.toolConfig.functionCallingConfig.mode).toBe("AUTO");
+    expect(run.usage).toEqual({ inputTokens: 1400, outputTokens: 400, cacheReadTokens: 1000, cacheWriteTokens: 0 });
   });
 });
 
