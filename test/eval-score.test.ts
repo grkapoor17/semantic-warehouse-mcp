@@ -84,6 +84,14 @@ describe("traps score as wrong", () => {
     expect(score("q04", 2.8).correct).toBe(false);
   });
 
+  it("identifier numbers (gameweeks) may come back as a label", () => {
+    expect(score("q29", { "Gameweek 34": 50 }).correct).toBe(true);
+    expect(score("q29", 34).correct).toBe(true);
+    expect(score("q29", { "Gameweek 35": 34 }).correct).toBe(true); // value 34 still counts
+    expect(score("q29", { "Gameweek 340": 50 }).correct).toBe(false);
+    expect(score("q01", { "Salah 344": 343 }).correct).toBe(false); // only flagged questions
+  });
+
   it("text: seasons in other spellings are fine", () => {
     expect(score("q10", "2016/17").correct).toBe(true);
     expect(score("q10", "2016-2017 season").correct).toBe(true);

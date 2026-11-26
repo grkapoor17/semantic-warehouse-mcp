@@ -303,20 +303,20 @@
    ],
    "answer": [
     {
-     "player_code": 225321,
-     "name": "Aaron Ramsdale",
-     "aliases": [
-      "aaron ramsdale",
-      "ramsdale"
-     ],
-     "value": 5
-    },
-    {
      "player_code": 440323,
      "name": "Armando Broja",
      "aliases": [
       "armando broja",
       "broja"
+     ],
+     "value": 5
+    },
+    {
+     "player_code": 225321,
+     "name": "Aaron Ramsdale",
+     "aliases": [
+      "aaron ramsdale",
+      "ramsdale"
      ],
      "value": 5
     }
@@ -462,6 +462,7 @@
    "tags": [
     "blank_gameweek"
    ],
+   "accept_in_label": true,
    "answer": 7
   },
   {
@@ -473,6 +474,7 @@
     "double_gameweek",
     "team_vs_player"
    ],
+   "accept_in_label": true,
    "answer": 34
   },
   {

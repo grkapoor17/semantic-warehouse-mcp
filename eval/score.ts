@@ -31,6 +31,8 @@ export interface GoldQuestion {
   tolerance?: number;
   top?: number;
   require_value?: boolean;
+  /** The number identifies something (a gameweek), so {"Gameweek 34": 50} counts as 34. */
+  accept_in_label?: boolean;
 }
 
 export interface Score {
@@ -125,7 +127,10 @@ function grade(g: GoldQuestion, a: Parsed): Score {
     case "number": {
       const want = g.answer as number;
       const got = single();
-      return near(got, want) ? ok : wrong(`expected ${want}, got ${JSON.stringify(got ?? a)}`);
+      if (near(got, want)) return ok;
+      const label = a.kind === "items" && a.items.length === 1 ? a.items[0]!.name : undefined;
+      if (g.accept_in_label && label && new RegExp(`(^|\\D)${want}(\\D|$)`).test(label)) return ok;
+      return wrong(`expected ${want}, got ${JSON.stringify(got ?? a)}`);
     }
 
     case "unavailable": {

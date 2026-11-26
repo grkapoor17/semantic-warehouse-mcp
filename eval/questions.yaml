@@ -16,6 +16,8 @@
 #                  table       several labelled values; columns `key`, `value`
 #                  unavailable the data doesn't contain it; the agent should say so, not invent a number
 #   top          for entity/ranking: how many rows count (the build checks for ties at the cut-off)
+#   accept_in_label  for numbers that identify something (a gameweek): a single labelled answer like
+#                {"Gameweek 34": 50} counts when the label contains the number
 #   tolerance    absolute tolerance for numbers (default 0 for integers, 0.01 otherwise)
 #   path         metrics = answerable with query_metrics alone; sql = needs run_query (no metric covers it)
 #   tags         the trap(s) it tests (see the list at the bottom)
@@ -290,6 +292,7 @@ questions:
 - id: q28
   question: "Which gameweek of 2022-23 had no matches played?"
   answer_type: number
+  accept_in_label: true
   gold_sql: |
     select g as value from range(1, 39) t(g)
     where g not in (select gameweek from marts.fct_fixtures where season = '2022-23')
@@ -300,6 +303,7 @@ questions:
 - id: q29
   question: "Which gameweek of 2023-24 had the most goals scored?"
   answer_type: number
+  accept_in_label: true
   gold_sql: |
     select gameweek as value from marts.fct_fixtures where season = '2023-24'
     group by gameweek order by sum(home_goals + away_goals) desc limit 1
