@@ -18,6 +18,7 @@
 #   top          for entity/ranking: how many rows count (the build checks for ties at the cut-off)
 #   accept_in_label  for numbers that identify something (a gameweek): a single labelled answer like
 #                {"Gameweek 34": 50} counts when the label contains the number
+#   also_accept  for numbers: other values that are equally right (e.g. a second valid data source)
 #   tolerance    absolute tolerance for numbers (default 0 for integers, 0.01 otherwise)
 #   path         metrics = answerable with query_metrics alone; sql = needs run_query (no metric covers it)
 #   tags         the trap(s) it tests (see the list at the bottom)
@@ -434,6 +435,7 @@ questions:
 - id: q40
   question: "How many FPL points did all players combined score in 2024-25?"
   answer_type: number
+  also_accept: [31291]  # FPL's official season totals; differ from summed matches by 1 point (Ferguson, upstream)
   gold_sql: |
     select sum(total_points) as value from marts.fct_player_fixtures
     where season = '2024-25' and position <> 'MGR'

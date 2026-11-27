@@ -6,7 +6,8 @@
  *   npx tsx eval/run.ts --yes --max-cost 30              # everything, stop if spend passes $30
  *
  * Nothing calls a model API without --yes. Results append to <out>/results.jsonl, one line per run,
- * and re-running with the same --out skips runs already recorded (so a stopped run can resume).
+ * and re-running with the same --out skips runs already recorded (so a stopped run can resume);
+ * runs that ended in an API/network error are retried. Reports use the latest attempt per run.
  * Full conversations go to <out>/transcripts/.
  */
 import { execSync } from "node:child_process";
@@ -50,6 +51,13 @@ export interface RunResult {
 
 const runKey = (model: string, arm: string, qid: string, repeat: number) => `${model}|${arm}|${qid}|${repeat}`;
 
+/** Keep the last line for each run key (a retried run appends a new line). */
+export function latestByKey(results: RunResult[]): RunResult[] {
+  const byKey = new Map<string, RunResult>();
+  for (const r of results) byKey.set(r.key, r);
+  return [...byKey.values()];
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -86,7 +94,9 @@ async function main() {
   if (existsSync(resultsPath)) {
     for (const line of readFileSync(resultsPath, "utf8").split("\n").filter(Boolean)) {
       const r = JSON.parse(line) as RunResult;
-      done.add(r.key);
+      // A run that died on an API/network error (rate limit, outage) is retried, not counted.
+      if (r.error) done.delete(r.key);
+      else done.add(r.key);
       spent += r.costUsd;
     }
   }

@@ -35,6 +35,8 @@ export interface GoldQuestion {
   require_value?: boolean;
   /** The number identifies something (a gameweek), so {"Gameweek 34": 50} counts as 34. */
   accept_in_label?: boolean;
+  /** Other values that are equally right, e.g. the same total from a second valid source. */
+  also_accept?: number[];
 }
 
 export interface Score {
@@ -129,7 +131,7 @@ function grade(g: GoldQuestion, a: Parsed): Score {
     case "number": {
       const want = g.answer as number;
       const got = single();
-      if (near(got, want)) return ok;
+      if (near(got, want) || (g.also_accept ?? []).some((alt) => near(got, alt))) return ok;
       const label = a.kind === "items" && a.items.length === 1 ? a.items[0]!.name : undefined;
       if (g.accept_in_label && label && new RegExp(`(^|\\D)${want}(\\D|$)`).test(label)) return ok;
       return wrong(`expected ${want}, got ${JSON.stringify(got ?? a)}`);

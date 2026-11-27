@@ -222,5 +222,11 @@ describe("report", () => {
     expect(out).toContain("| m | 50% (1/2) | 100% (2/2) |");
     expect(out).toContain("| own_goals | 1 | 0% | 100% |");
     expect(out).toContain("Total: 4 runs, $0.04.");
+    // A retried run replaces its errored attempt; an unretried error is excluded and reported.
+    const failed = { ...r("m", "A", "q1", false), error: "ApiError 429" };
+    const retried = summarise([failed, r("m", "A", "q1", true), r("m", "A", "q2", false), r("m", "B", "q1", true), r("m", "B", "q2", true)], gold);
+    expect(retried).toContain("| m | 50% (1/2) | 100% (2/2) |");
+    const unretried = summarise([{ ...r("m", "A", "q2", false), error: "fetch failed" }, r("m", "A", "q1", true)], gold);
+    expect(unretried).toContain("Excluded: 1 run(s) that ended in an API error");
   });
 });

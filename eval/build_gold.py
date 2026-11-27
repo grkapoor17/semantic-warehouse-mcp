@@ -73,7 +73,7 @@ def main() -> int:
         rows = [dict(zip(cols, r)) for r in cur.fetchall()]
         t = q["answer_type"]
         entry = {"id": q["id"], "question": q["question"], "answer_type": t, "path": q["path"], "tags": q["tags"]}
-        for k in ("tolerance", "top", "require_value", "accept_in_label"):
+        for k in ("tolerance", "top", "require_value", "accept_in_label", "also_accept"):
             if k in q:
                 entry[k] = q[k]
 

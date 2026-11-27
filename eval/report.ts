@@ -6,9 +6,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { GoldQuestion } from "./score.js";
-import type { RunResult } from "./run.js";
+import { latestByKey, type RunResult } from "./run.js";
 
-export function summarise(results: RunResult[], gold: GoldQuestion[]): string {
+export function summarise(all: RunResult[], gold: GoldQuestion[]): string {
+  const latest = latestByKey(all);
+  const errored = latest.filter((r) => r.error);
+  // Runs that died on an API error say nothing about the model; leave them out (and say so).
+  const results = latest.filter((r) => !r.error);
   const tags = new Map(gold.map((q) => [q.id, q.tags]));
   const models = [...new Set(results.map((r) => r.model))];
   const arms = [...new Set(results.map((r) => r.arm))].sort();
@@ -42,8 +46,9 @@ export function summarise(results: RunResult[], gold: GoldQuestion[]): string {
     lines.push(`| ${t} | ${nq} | ${arms.map((a) => pct(rs.filter((r) => r.arm === a))).join(" | ")} |`);
   }
 
-  const total = results.reduce((s, r) => s + r.costUsd, 0);
+  const total = all.reduce((s, r) => s + r.costUsd, 0);
   lines.push(`\nTotal: ${results.length} runs, $${total.toFixed(2)}.`);
+  if (errored.length) lines.push(`Excluded: ${errored.length} run(s) that ended in an API error (re-run to fill them in).`);
   return lines.join("\n");
 }
 

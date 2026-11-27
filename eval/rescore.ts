@@ -23,6 +23,9 @@ const results = readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) =
 
 let changed = 0;
 const updated = results.map((r) => {
+  // A run that ended in an API error has nothing to grade (and may since have been retried:
+  // its later line is graded instead). Kept as-is so spend accounting stays complete.
+  if (r.error) return r;
   const t = JSON.parse(readFileSync(join(dir, "transcripts", `${r.model}__${r.arm}__${r.qid}__r${r.repeat}.json`), "utf8")) as { finalText: string };
   const s = scoreAnswer(gold.get(r.qid)!, t.finalText);
   if (s.correct !== r.correct) {

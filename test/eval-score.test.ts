@@ -103,6 +103,12 @@ describe("traps score as wrong", () => {
     expect(score("q04", 2.8).correct).toBe(false);
   });
 
+  it("also_accept: q40 takes the summed-matches or the official-season total", () => {
+    expect(score("q40", 31290).correct).toBe(true);
+    expect(score("q40", 31291).correct).toBe(true);
+    expect(score("q40", 33151).correct).toBe(false); // managers included
+  });
+
   it("identifier numbers (gameweeks) may come back as a label", () => {
     expect(score("q29", { "Gameweek 34": 50 }).correct).toBe(true);
     expect(score("q29", 34).correct).toBe(true);
