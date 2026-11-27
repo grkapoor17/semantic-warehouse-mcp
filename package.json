@@ -1,6 +1,7 @@
 {
   "name": "semantic-warehouse-mcp",
   "version": "0.1.0",
+  "mcpName": "io.github.grkapoor17/semantic-warehouse-mcp",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -52,5 +53,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/grkapoor17/semantic-warehouse-mcp.git"
+  },
+  "homepage": "https://github.com/grkapoor17/semantic-warehouse-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/grkapoor17/semantic-warehouse-mcp/issues"
   }
 }

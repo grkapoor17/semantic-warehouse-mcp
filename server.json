@@ -1,0 +1,60 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.grkapoor17/semantic-warehouse-mcp",
+  "title": "Semantic Warehouse",
+  "description": "Guarded read-only SQL plus dbt semantic-layer metrics for AI agents, over a DuckDB warehouse.",
+  "repository": {
+    "url": "https://github.com/grkapoor17/semantic-warehouse-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "semantic-warehouse-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "named",
+          "name": "--duckdb",
+          "description": "Path to the DuckDB database file. It is always opened read-only.",
+          "format": "filepath",
+          "isRequired": true
+        },
+        {
+          "type": "named",
+          "name": "--semantic-manifest",
+          "description": "dbt's target/semantic_manifest.json. Adds list_metrics, list_dimensions and query_metrics.",
+          "format": "filepath",
+          "isRequired": false
+        },
+        {
+          "type": "named",
+          "name": "--schemas",
+          "description": "Comma-separated schemas the agent may list and query (enforced on every query), e.g. marts.",
+          "format": "string",
+          "isRequired": false
+        },
+        {
+          "type": "named",
+          "name": "--max-rows",
+          "description": "Maximum rows returned per query.",
+          "format": "number",
+          "default": "200",
+          "isRequired": false
+        },
+        {
+          "type": "named",
+          "name": "--timeout-ms",
+          "description": "Per-query time budget in milliseconds.",
+          "format": "number",
+          "default": "15000",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
