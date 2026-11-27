@@ -9,6 +9,7 @@
  * and re-running with the same --out skips runs already recorded (so a stopped run can resume).
  * Full conversations go to <out>/transcripts/.
  */
+import { execSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
@@ -115,7 +116,14 @@ async function main() {
   // ---- real run --------------------------------------------------------------------------------
   if (existsSync(".env")) process.loadEnvFile(".env");
   mkdirSync(join(out, "transcripts"), { recursive: true });
-  writeFileSync(join(out, "config.json"), JSON.stringify({ models, arms, questions: gold.map((q) => q.id), repeats, maxToolCalls, maxCost, answerFormat: ANSWER_FORMAT }, null, 2));
+  const commit = (() => {
+    try {
+      return execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim() + (execSync("git status --porcelain", { encoding: "utf8" }).trim() ? "-dirty" : "");
+    } catch {
+      return "unknown";
+    }
+  })();
+  writeFileSync(join(out, "config.json"), JSON.stringify({ commit, models, arms, questions: gold.map((q) => q.id), repeats, maxToolCalls, maxCost, answerFormat: ANSWER_FORMAT }, null, 2));
   const providers = await loadProviders(models.map((m) => m.provider));
 
   let next = 0;

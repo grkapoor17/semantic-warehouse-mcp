@@ -127,6 +127,23 @@ describe("what the agent sees", () => {
     });
   });
 
+  it("attaches the source table's description to each metric as notes", () => {
+    const withNotes = new SemanticCatalog({
+      ...shopManifest,
+      semantic_models: shopManifest.semantic_models.map((m) =>
+        m.name === "orders" ? { ...m, description: "One row per order.\n  Refunded orders are\nstill included." } : m,
+      ),
+    });
+    const metrics = withNotes.listMetrics();
+    expect(metrics.find((m) => m.name === "revenue")?.notes).toEqual(["One row per order. Refunded orders are still included."]);
+    // Derived metrics spanning two tables get both tables' notes (refunds has no description here).
+    expect(metrics.find((m) => m.name === "net_revenue")?.notes).toEqual(["One row per order. Refunded orders are still included."]);
+    // A metric whose table has no description gets no notes key at all.
+    expect(metrics.find((m) => m.name === "refunds")).not.toHaveProperty("notes");
+    // Metrics the compiler can't handle still list, without notes.
+    expect(metrics.find((m) => m.name === "p90_order")).not.toHaveProperty("notes");
+  });
+
   it("lists dimensions usable with every requested metric, time dims with grains", () => {
     const one = catalog.commonDimensions(["revenue"]).map((d) => d.name);
     expect(one).toEqual(["customer", "customer__country", "customer__name", "metric_time", "order", "order__ordered_at", "order__status"]);

@@ -56,10 +56,36 @@ export class SemanticCatalog {
     }
   }
 
-  listMetrics(): { name: string; label: string | null; type: string; description: string | null }[] {
+  /**
+   * The metric catalogue. Each metric carries `notes`: the descriptions of the semantic models its
+   * measures come from. Table-level caveats ("includes managers; filter position != 'MGR'") are
+   * usually written there, not on each metric, and v1 of the eval showed agents never saw them.
+   */
+  listMetrics(): { name: string; label: string | null; type: string; description: string | null; notes?: string[] }[] {
     return [...this.metrics.values()]
-      .map((m) => ({ name: m.name, label: m.label ?? null, type: m.type, description: m.description || null }))
+      .map((m) => {
+        const notes = this.modelNotes(m.name);
+        return {
+          name: m.name,
+          label: m.label ?? null,
+          type: m.type,
+          description: m.description || null,
+          ...(notes.length ? { notes } : {}),
+        };
+      })
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** Descriptions of the semantic models behind a metric (empty if none, or if the metric can't be compiled). */
+  private modelNotes(metricName: string): string[] {
+    let measures: Measure[];
+    try {
+      measures = this.measuresOf(metricName);
+    } catch {
+      return [];
+    }
+    const models = new Set(measures.map((ms) => this.measureModel.get(ms.name)!.model));
+    return [...models].map((md) => md.description?.trim().replace(/\s+/g, " ")).filter((d): d is string => Boolean(d));
   }
 
   getMetric(name: string): Metric {

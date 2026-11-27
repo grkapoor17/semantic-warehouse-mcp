@@ -78,7 +78,9 @@ export function createServer({ adapter, semanticManifest, limits, name = "semant
       "list_metrics",
       {
         title: "List metrics",
-        description: "List the metrics defined in the semantic layer, with their definitions and caveats.",
+        description:
+          "List the metrics defined in the semantic layer, with their definitions. `notes` describe the table each " +
+          "metric is computed from, including caveats (rows to exclude, grain, missing data); read them before querying.",
         inputSchema: {},
         annotations: READ_ONLY,
       },

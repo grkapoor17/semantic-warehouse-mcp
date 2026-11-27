@@ -24,3 +24,8 @@ models:
     marts:
       +schema: marts
       +materialized: table
+      # Write the YAML descriptions into the warehouse as COMMENTs, so tools that read the
+      # database (describe_table, list_tables) can show them to agents.
+      +persist_docs:
+        relation: true
+        columns: true
